@@ -40,11 +40,13 @@ export interface CampaignData {
   notes?: string;
 }
 
+import laurenArthursAvatar from "@/assets/lauren-arthurs.png";
+
 export const creators: Creator[] = [
   {
     id: "lauren-arthurs",
     name: "Lauren Arthurs",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
+    avatar: laurenArthursAvatar,
     handle: "@laurenarthurs",
     platforms: ["Instagram", "TikTok"],
   },
