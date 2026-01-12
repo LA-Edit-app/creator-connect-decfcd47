@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Plus, Trash2, ArrowLeft, Eye } from "lucide-react";
+import { Search, Filter, Plus, Trash2, ArrowLeft, Eye, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -18,6 +18,7 @@ import { CampaignDetailModal } from "@/components/campaign-tracker/CampaignDetai
 import { CampaignData, Creator, initialCampaignData, creators } from "@/data/campaignTrackerData";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import * as XLSX from "xlsx";
 
 const completeOptions = [
   { value: "✓", label: "✓" },
@@ -48,6 +49,7 @@ const CampaignTracker = () => {
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignData | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const creatorCampaigns = useMemo(() => {
     if (!selectedCreator) return [];
@@ -111,6 +113,56 @@ const CampaignTracker = () => {
   const deleteRow = (id: number) => {
     setCampaigns((prev) => prev.filter((c) => c.id !== id));
     toast.success("Row deleted");
+  };
+
+  const handleExcelUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !selectedCreator) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        const maxId = Math.max(...campaigns.map((c) => c.id), 0);
+        
+        const newCampaigns: CampaignData[] = jsonData.map((row: any, index: number) => ({
+          id: maxId + index + 1,
+          creatorId: selectedCreator.id,
+          brand: row.Brand || row.brand || "",
+          launchDate: row["Launch Date"] || row.launchDate || "",
+          activity: row.Activity || row.activity || "",
+          liveDate: row["Live Date"] || row.liveDate || "",
+          agPrice: parseFloat(row["AG Price"] || row.agPrice) || null,
+          creatorFee: parseFloat(row["Creator Fee"] || row.creatorFee) || null,
+          shot: row.Shot || row.shot || "",
+          complete: row.Complete || row.complete || "",
+          invoiceNo: row["Invoice No"] || row.invoiceNo || "",
+          paid: row.Paid || row.paid || "",
+          includesVat: row["Includes VAT"] || row.includesVat || "",
+          currency: row.Currency || row.currency || "GBP",
+          brandPOs: row["Brand POs"] || row.brandPOs || "",
+          paymentTerms: row["Payment Terms"] || row.paymentTerms || "",
+          content: [],
+        }));
+
+        setCampaigns((prev) => [...prev, ...newCampaigns]);
+        toast.success(`Imported ${newCampaigns.length} campaigns from Excel`);
+      } catch (error) {
+        console.error("Error parsing Excel file:", error);
+        toast.error("Failed to parse Excel file. Please check the format.");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    
+    // Reset the input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const getCompleteStyle = (complete: string) => {
@@ -193,10 +245,27 @@ const CampaignTracker = () => {
               <Filter className="w-4 h-4" />
             </Button>
           </div>
-          <Button onClick={addNewRow} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Row
-          </Button>
+          <div className="flex gap-3">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleExcelUpload}
+              accept=".xlsx,.xls,.csv"
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              Import Excel
+            </Button>
+            <Button onClick={addNewRow} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Row
+            </Button>
+          </div>
         </div>
 
         {/* Campaigns Table */}
