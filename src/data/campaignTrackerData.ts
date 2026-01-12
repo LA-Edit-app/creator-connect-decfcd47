@@ -88,6 +88,24 @@ export const initialCampaignData: CampaignData[] = [
     currency: "GBP",
     brandPOs: "",
     paymentTerms: "",
+    content: [
+      {
+        id: "content-1",
+        type: "carousel",
+        title: "Summer Collection Carousel",
+        url: "https://www.instagram.com/p/example1",
+        platform: "Instagram",
+        status: "published",
+        notes: "5-slide carousel featuring new arrivals",
+      },
+      {
+        id: "content-2",
+        type: "story",
+        title: "Story Set - Unboxing",
+        platform: "Instagram",
+        status: "published",
+      },
+    ],
   },
   {
     id: 2,
