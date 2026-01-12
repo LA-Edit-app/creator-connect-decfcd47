@@ -26,7 +26,7 @@ const data = [
 export function CampaignChart() {
   return (
     <div className="bg-card rounded-xl border border-border p-6">
-      <h3 className="text-lg font-semibold text-foreground mb-6">Campaign Performance</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-6">Number of Active Campaigns</h3>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
