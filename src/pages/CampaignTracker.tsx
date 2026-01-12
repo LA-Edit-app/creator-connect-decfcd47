@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Plus, Trash2 } from "lucide-react";
+import { Search, Filter, Plus, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/table";
 import { EditableCell } from "@/components/campaign-tracker/EditableCell";
 import { StatusSelect } from "@/components/campaign-tracker/StatusSelect";
-import { CampaignData, initialCampaignData } from "@/data/campaignTrackerData";
+import { CreatorSelector } from "@/components/campaign-tracker/CreatorSelector";
+import { CampaignData, Creator, initialCampaignData, creators } from "@/data/campaignTrackerData";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const completeOptions = [
   { value: "✓", label: "✓" },
@@ -42,13 +44,19 @@ const currencyOptions = [
 const CampaignTracker = () => {
   const [campaigns, setCampaigns] = useState<CampaignData[]>(initialCampaignData);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
+
+  const creatorCampaigns = useMemo(() => {
+    if (!selectedCreator) return [];
+    return campaigns.filter((c) => c.creatorId === selectedCreator.id);
+  }, [campaigns, selectedCreator]);
 
   const updateCampaign = (id: number, field: keyof CampaignData, value: string) => {
     setCampaigns((prev) =>
       prev.map((campaign) => {
         if (campaign.id !== id) return campaign;
 
-        if (field === "agPrice" || field === "laurenFee") {
+        if (field === "agPrice" || field === "creatorFee") {
           const numValue = value === "" ? null : parseFloat(value);
           return { ...campaign, [field]: numValue };
         }
@@ -60,15 +68,17 @@ const CampaignTracker = () => {
   };
 
   const addNewRow = () => {
+    if (!selectedCreator) return;
     const newId = Math.max(...campaigns.map((c) => c.id)) + 1;
     const newCampaign: CampaignData = {
       id: newId,
+      creatorId: selectedCreator.id,
       brand: "",
       launchDate: "",
       activity: "",
       liveDate: "",
       agPrice: null,
-      laurenFee: null,
+      creatorFee: null,
       shot: "",
       complete: "",
       invoiceNo: "",
@@ -104,15 +114,53 @@ const CampaignTracker = () => {
   const getVatStyle = () => "bg-slate-100 text-slate-700 hover:bg-slate-200";
   const getCurrencyStyle = () => "bg-blue-100 text-blue-700 hover:bg-blue-200";
 
-  const filteredCampaigns = campaigns.filter((campaign) =>
+  const filteredCampaigns = creatorCampaigns.filter((campaign) =>
     campaign.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
     campaign.activity.toLowerCase().includes(searchQuery.toLowerCase()) ||
     campaign.invoiceNo.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Show creator selector if no creator is selected
+  if (!selectedCreator) {
+    return (
+      <DashboardLayout title="Campaign Tracker">
+        <CreatorSelector creators={creators} onSelect={setSelectedCreator} />
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout title="Campaign Tracker">
       <div className="space-y-6 animate-fade-in">
+        {/* Creator Header */}
+        <div className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSelectedCreator(null)}
+            className="shrink-0"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <Avatar className="w-12 h-12 ring-2 ring-primary/20">
+            <AvatarImage src={selectedCreator.avatar} alt={selectedCreator.name} />
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              {selectedCreator.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-foreground">{selectedCreator.name}</h2>
+            <p className="text-sm text-muted-foreground">{selectedCreator.handle}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground">Total Campaigns</p>
+            <p className="text-2xl font-bold text-primary">{creatorCampaigns.length}</p>
+          </div>
+        </div>
+
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-between">
           <div className="flex gap-3">
@@ -147,7 +195,7 @@ const CampaignTracker = () => {
                   <TableHead className="font-semibold text-foreground min-w-[200px]">Activity</TableHead>
                   <TableHead className="font-semibold text-foreground whitespace-nowrap">Live Date</TableHead>
                   <TableHead className="font-semibold text-foreground whitespace-nowrap text-right">AG Price</TableHead>
-                  <TableHead className="font-semibold text-foreground whitespace-nowrap text-right">Lauren Fee</TableHead>
+                  <TableHead className="font-semibold text-foreground whitespace-nowrap text-right">{selectedCreator.name.split(" ")[0]} Fee</TableHead>
                   <TableHead className="font-semibold text-foreground whitespace-nowrap">Shot</TableHead>
                   <TableHead className="font-semibold text-foreground whitespace-nowrap">Complete</TableHead>
                   <TableHead className="font-semibold text-foreground whitespace-nowrap">Invoice No</TableHead>
@@ -210,8 +258,8 @@ const CampaignTracker = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <EditableCell
-                        value={campaign.laurenFee}
-                        onChange={(v) => updateCampaign(campaign.id, "laurenFee", v)}
+                        value={campaign.creatorFee}
+                        onChange={(v) => updateCampaign(campaign.id, "creatorFee", v)}
                         type="number"
                         displayClassName="text-muted-foreground justify-end"
                       />
