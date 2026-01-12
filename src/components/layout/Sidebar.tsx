@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Megaphone, label: "Campaigns", path: "/campaigns" },
   { icon: ClipboardList, label: "Campaign Tracker", path: "/campaign-tracker" },
   { icon: Users, label: "Creators", path: "/creators" },
   { icon: BarChart3, label: "Analytics", path: "/analytics" },
