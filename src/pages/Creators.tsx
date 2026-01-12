@@ -12,7 +12,6 @@ const creators = [
     email: "sarah@example.com",
     category: "Fashion",
     followers: "1.2M",
-    engagement: "4.2%",
     campaigns: 8,
     status: "active",
     platforms: ["instagram", "youtube"],
@@ -23,7 +22,6 @@ const creators = [
     email: "mike@example.com",
     category: "Tech",
     followers: "850K",
-    engagement: "3.8%",
     campaigns: 5,
     status: "active",
     platforms: ["youtube", "twitter"],
@@ -34,7 +32,6 @@ const creators = [
     email: "emma@example.com",
     category: "Fitness",
     followers: "2.1M",
-    engagement: "5.1%",
     campaigns: 12,
     status: "active",
     platforms: ["instagram", "youtube"],
@@ -45,7 +42,6 @@ const creators = [
     email: "alex@example.com",
     category: "Lifestyle",
     followers: "680K",
-    engagement: "4.7%",
     campaigns: 6,
     status: "inactive",
     platforms: ["instagram"],
@@ -56,7 +52,6 @@ const creators = [
     email: "chris@example.com",
     category: "Gaming",
     followers: "3.5M",
-    engagement: "6.2%",
     campaigns: 15,
     status: "active",
     platforms: ["youtube", "twitter"],
@@ -67,7 +62,6 @@ const creators = [
     email: "jessica@example.com",
     category: "Beauty",
     followers: "1.8M",
-    engagement: "4.9%",
     campaigns: 10,
     status: "active",
     platforms: ["instagram", "youtube"],
@@ -126,9 +120,6 @@ const Creators = () => {
                     Followers
                   </th>
                   <th className="text-left py-4 px-6 text-sm font-medium text-muted-foreground">
-                    Engagement
-                  </th>
-                  <th className="text-left py-4 px-6 text-sm font-medium text-muted-foreground">
                     Campaigns
                   </th>
                   <th className="text-left py-4 px-6 text-sm font-medium text-muted-foreground">
@@ -169,7 +160,6 @@ const Creators = () => {
                     <td className="py-4 px-6 font-medium text-foreground">
                       {creator.followers}
                     </td>
-                    <td className="py-4 px-6 text-foreground">{creator.engagement}</td>
                     <td className="py-4 px-6 text-foreground">{creator.campaigns}</td>
                     <td className="py-4 px-6">
                       <div className="flex gap-2">

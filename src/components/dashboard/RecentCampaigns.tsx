@@ -7,7 +7,6 @@ const campaigns = [
     creator: "Sarah Johnson",
     status: "active",
     budget: "$12,500",
-    engagement: "4.2%",
   },
   {
     id: 2,
@@ -15,7 +14,6 @@ const campaigns = [
     creator: "Mike Chen",
     status: "pending",
     budget: "$8,000",
-    engagement: "3.8%",
   },
   {
     id: 3,
@@ -23,7 +21,6 @@ const campaigns = [
     creator: "Emma Davis",
     status: "active",
     budget: "$15,000",
-    engagement: "5.1%",
   },
   {
     id: 4,
@@ -31,7 +28,6 @@ const campaigns = [
     creator: "Alex Thompson",
     status: "completed",
     budget: "$10,000",
-    engagement: "4.7%",
   },
   {
     id: 5,
@@ -39,7 +35,6 @@ const campaigns = [
     creator: "Chris Lee",
     status: "active",
     budget: "$20,000",
-    engagement: "6.2%",
   },
 ];
 
@@ -75,9 +70,6 @@ export function RecentCampaigns() {
               <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
                 Budget
               </th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Engagement
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -99,7 +91,6 @@ export function RecentCampaigns() {
                   </Badge>
                 </td>
                 <td className="py-3 px-4 text-foreground">{campaign.budget}</td>
-                <td className="py-3 px-4 text-foreground">{campaign.engagement}</td>
               </tr>
             ))}
           </tbody>

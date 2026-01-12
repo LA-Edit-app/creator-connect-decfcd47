@@ -14,7 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Eye, Heart, MessageCircle, Share2 } from "lucide-react";
+import { DollarSign, FileCheck, Megaphone, Users } from "lucide-react";
 
 const revenueData = [
   { name: "Jan", revenue: 45000 },
@@ -38,17 +38,17 @@ const platformData = [
   { name: "Twitter", value: 10 },
 ];
 
-const engagementData = [
-  { name: "Mon", impressions: 120000, clicks: 8500 },
-  { name: "Tue", impressions: 135000, clicks: 9200 },
-  { name: "Wed", impressions: 142000, clicks: 9800 },
-  { name: "Thu", impressions: 138000, clicks: 9100 },
-  { name: "Fri", impressions: 155000, clicks: 10500 },
-  { name: "Sat", impressions: 168000, clicks: 11200 },
-  { name: "Sun", impressions: 152000, clicks: 10100 },
+const campaignData = [
+  { name: "Mon", completed: 5, pending: 3 },
+  { name: "Tue", completed: 7, pending: 2 },
+  { name: "Wed", completed: 4, pending: 4 },
+  { name: "Thu", completed: 8, pending: 1 },
+  { name: "Fri", completed: 6, pending: 3 },
+  { name: "Sat", completed: 9, pending: 2 },
+  { name: "Sun", completed: 5, pending: 2 },
 ];
 
-const COLORS = ["hsl(328, 75%, 55%)", "hsl(0, 70%, 55%)", "hsl(280, 70%, 55%)", "hsl(200, 70%, 55%)"];
+const COLORS = ["hsl(262, 83%, 58%)", "hsl(280, 70%, 55%)", "hsl(328, 75%, 55%)", "hsl(200, 70%, 55%)"];
 
 const Analytics = () => {
   return (
@@ -57,27 +57,27 @@ const Analytics = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
-            icon={<Eye className="w-5 h-5" />}
-            value="2.4M"
-            label="Total Impressions"
+            icon={<Megaphone className="w-5 h-5" />}
+            value="148"
+            label="Total Campaigns"
             trend={{ value: 18, positive: true }}
           />
           <StatCard
-            icon={<Heart className="w-5 h-5" />}
-            value="186K"
-            label="Total Likes"
+            icon={<Users className="w-5 h-5" />}
+            value="52"
+            label="Active Creators"
             trend={{ value: 12, positive: true }}
           />
           <StatCard
-            icon={<MessageCircle className="w-5 h-5" />}
-            value="24.5K"
-            label="Comments"
+            icon={<FileCheck className="w-5 h-5" />}
+            value="89%"
+            label="Completion Rate"
             trend={{ value: 8, positive: true }}
           />
           <StatCard
-            icon={<Share2 className="w-5 h-5" />}
-            value="45.2K"
-            label="Shares"
+            icon={<DollarSign className="w-5 h-5" />}
+            value="$815K"
+            label="Total Revenue"
             trend={{ value: 15, positive: true }}
           />
         </div>
@@ -92,35 +92,35 @@ const Analytics = () => {
                 <AreaChart data={revenueData}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.05} />
+                      <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.05} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(40, 15%, 90%)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(260, 15%, 90%)" />
                   <XAxis
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "hsl(220, 10%, 45%)", fontSize: 12 }}
+                    tick={{ fill: "hsl(260, 10%, 45%)", fontSize: 12 }}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "hsl(220, 10%, 45%)", fontSize: 12 }}
+                    tick={{ fill: "hsl(260, 10%, 45%)", fontSize: 12 }}
                     tickFormatter={(value) => `$${value / 1000}k`}
                   />
                   <Tooltip
                     formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
                     contentStyle={{
                       backgroundColor: "hsl(0, 0%, 100%)",
-                      border: "1px solid hsl(40, 15%, 90%)",
+                      border: "1px solid hsl(260, 15%, 90%)",
                       borderRadius: "8px",
                     }}
                   />
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="hsl(38, 92%, 50%)"
+                    stroke="hsl(262, 83%, 58%)"
                     strokeWidth={2}
                     fill="url(#revenueGradient)"
                   />
@@ -152,7 +152,7 @@ const Analytics = () => {
                     formatter={(value: number) => [`${value}%`, "Share"]}
                     contentStyle={{
                       backgroundColor: "hsl(0, 0%, 100%)",
-                      border: "1px solid hsl(40, 15%, 90%)",
+                      border: "1px solid hsl(260, 15%, 90%)",
                       borderRadius: "8px",
                     }}
                   />
@@ -174,35 +174,34 @@ const Analytics = () => {
           </div>
         </div>
 
-        {/* Engagement Chart */}
+        {/* Campaign Activity Chart */}
         <div className="bg-card rounded-xl border border-border p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-6">Weekly Engagement</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-6">Weekly Campaign Activity</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={engagementData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(40, 15%, 90%)" />
+              <BarChart data={campaignData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(260, 15%, 90%)" />
                 <XAxis
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "hsl(220, 10%, 45%)", fontSize: 12 }}
+                  tick={{ fill: "hsl(260, 10%, 45%)", fontSize: 12 }}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "hsl(220, 10%, 45%)", fontSize: 12 }}
-                  tickFormatter={(value) => `${value / 1000}k`}
+                  tick={{ fill: "hsl(260, 10%, 45%)", fontSize: 12 }}
                 />
                 <Tooltip
-                  formatter={(value: number) => [value.toLocaleString(), ""]}
+                  formatter={(value: number) => [value, ""]}
                   contentStyle={{
                     backgroundColor: "hsl(0, 0%, 100%)",
-                    border: "1px solid hsl(40, 15%, 90%)",
+                    border: "1px solid hsl(260, 15%, 90%)",
                     borderRadius: "8px",
                   }}
                 />
-                <Bar dataKey="impressions" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="clicks" fill="hsl(38, 70%, 70%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="completed" name="Completed" fill="hsl(262, 83%, 58%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="pending" name="Pending" fill="hsl(262, 60%, 80%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

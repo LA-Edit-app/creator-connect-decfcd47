@@ -30,8 +30,8 @@ const Index = () => {
           />
           <StatCard
             icon={<TrendingUp className="w-5 h-5" />}
-            value="4.8%"
-            label="Avg. Engagement"
+            value="87%"
+            label="Completion Rate"
             trend={{ value: 5, positive: true }}
           />
         </div>
