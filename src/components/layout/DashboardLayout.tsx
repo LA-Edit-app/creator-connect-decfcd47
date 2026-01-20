@@ -13,7 +13,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header title={title} />
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 pb-4">
           {children}
         </main>
       </div>

@@ -313,8 +313,8 @@ const CampaignTracker = () => {
 
         {/* Campaigns Table */}
         <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table style={{ fontSize: `${zoomLevel}rem`, transform: `scale(1)` }} className="transition-all duration-200">
+          <div className="overflow-x-auto overflow-y-visible" style={{ overflowX: 'auto', overscrollBehaviorX: 'contain' }}>
+            <Table style={{ fontSize: `${zoomLevel}rem` }} className="transition-all duration-200">
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead className="font-semibold text-foreground whitespace-nowrap w-10"></TableHead>
