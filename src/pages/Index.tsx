@@ -2,7 +2,9 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { CampaignChart } from "@/components/dashboard/CampaignChart";
 import { RecentCampaigns } from "@/components/dashboard/RecentCampaigns";
+import { TaskList } from "@/components/layout/TaskList";
 import { Megaphone, Users, PoundSterling } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Index = () => {
   return (
@@ -30,8 +32,20 @@ const Index = () => {
           />
         </div>
 
-        {/* Chart */}
-        <CampaignChart />
+        {/* Chart and Tasks Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <CampaignChart />
+          </div>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Tasks</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <TaskList />
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Recent Campaigns */}
         <RecentCampaigns />

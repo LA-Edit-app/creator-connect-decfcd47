@@ -11,7 +11,6 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TaskList } from "./TaskList";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -79,11 +78,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      {/* Task List */}
-      <div className="border-t border-sidebar-border">
-        <TaskList collapsed={collapsed} />
-      </div>
 
       {/* User section */}
       <div className="p-3 border-t border-sidebar-border">

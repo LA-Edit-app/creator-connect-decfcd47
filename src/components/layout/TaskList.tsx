@@ -11,11 +11,7 @@ interface Task {
   completed: boolean;
 }
 
-interface TaskListProps {
-  collapsed?: boolean;
-}
-
-export function TaskList({ collapsed }: TaskListProps) {
+export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([
     { id: "1", text: "Review campaign briefs", completed: false },
     { id: "2", text: "Send creator contracts", completed: true },
@@ -56,22 +52,9 @@ export function TaskList({ collapsed }: TaskListProps) {
     }
   };
 
-  if (collapsed) {
-    return (
-      <div className="p-2">
-        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center mx-auto">
-          <span className="text-xs font-medium text-muted-foreground">
-            {tasks.filter((t) => !t.completed).length}
-          </span>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-3">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-foreground">Tasks</h3>
+    <div>
+      <div className="flex items-center justify-end mb-3">
         <Button
           variant="ghost"
           size="icon"
@@ -82,7 +65,7 @@ export function TaskList({ collapsed }: TaskListProps) {
         </Button>
       </div>
 
-      <div className="space-y-2 max-h-48 overflow-y-auto">
+      <div className="space-y-2 max-h-64 overflow-y-auto">
         {isAdding && (
           <div className="flex items-center gap-2">
             <Input
@@ -90,7 +73,7 @@ export function TaskList({ collapsed }: TaskListProps) {
               onChange={(e) => setNewTask(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Add a task..."
-              className="h-7 text-xs"
+              className="h-8 text-sm"
               autoFocus
             />
             <Button
@@ -108,7 +91,7 @@ export function TaskList({ collapsed }: TaskListProps) {
           <div
             key={task.id}
             className={cn(
-              "flex items-center gap-2 p-2 rounded-lg group hover:bg-sidebar-accent transition-colors",
+              "flex items-center gap-2 p-2 rounded-lg group hover:bg-muted transition-colors",
               task.completed && "opacity-60"
             )}
           >
@@ -119,7 +102,7 @@ export function TaskList({ collapsed }: TaskListProps) {
             />
             <span
               className={cn(
-                "text-xs flex-1 truncate text-sidebar-foreground",
+                "text-sm flex-1 truncate text-foreground",
                 task.completed && "line-through"
               )}
             >
@@ -137,14 +120,14 @@ export function TaskList({ collapsed }: TaskListProps) {
         ))}
 
         {tasks.length === 0 && !isAdding && (
-          <p className="text-xs text-muted-foreground text-center py-2">
+          <p className="text-sm text-muted-foreground text-center py-4">
             No tasks yet
           </p>
         )}
       </div>
 
-      <div className="mt-2 pt-2 border-t border-sidebar-border">
-        <p className="text-xs text-muted-foreground">
+      <div className="mt-3 pt-3 border-t border-border">
+        <p className="text-sm text-muted-foreground">
           {tasks.filter((t) => !t.completed).length} remaining
         </p>
       </div>
