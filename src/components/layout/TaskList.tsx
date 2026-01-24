@@ -16,6 +16,9 @@ export function TaskList() {
     { id: "1", text: "Review campaign briefs", completed: false },
     { id: "2", text: "Send creator contracts", completed: true },
     { id: "3", text: "Update analytics report", completed: false },
+    { id: "4", text: "Schedule content review meeting", completed: false },
+    { id: "5", text: "Approve influencer posts", completed: false },
+    { id: "6", text: "Follow up with brand partners", completed: true },
   ]);
   const [newTask, setNewTask] = useState("");
   const [isAdding, setIsAdding] = useState(false);
