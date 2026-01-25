@@ -1,6 +1,6 @@
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -42,7 +42,7 @@ export function RevenueChart() {
       </h3>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} barGap={2}>
+          <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(40, 15%, 90%)" />
             <XAxis
               dataKey="name"
@@ -73,19 +73,23 @@ export function RevenueChart() {
                 value === "thisYear" ? currentYear : lastYear
               }
             />
-            <Bar
+            <Line
+              type="monotone"
               dataKey="lastYear"
-              fill="hsl(220, 10%, 75%)"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={24}
+              stroke="hsl(220, 10%, 65%)"
+              strokeWidth={2}
+              dot={{ fill: "hsl(220, 10%, 65%)", strokeWidth: 0, r: 4 }}
+              activeDot={{ r: 6 }}
             />
-            <Bar
+            <Line
+              type="monotone"
               dataKey="thisYear"
-              fill="hsl(38, 92%, 50%)"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={24}
+              stroke="hsl(38, 92%, 50%)"
+              strokeWidth={2}
+              dot={{ fill: "hsl(38, 92%, 50%)", strokeWidth: 0, r: 4 }}
+              activeDot={{ r: 6 }}
             />
-          </BarChart>
+          </LineChart>
         </ResponsiveContainer>
       </div>
     </div>
