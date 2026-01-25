@@ -1,6 +1,7 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { CampaignChart } from "@/components/dashboard/CampaignChart";
+import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { RecentCampaigns } from "@/components/dashboard/RecentCampaigns";
 import { TaskList } from "@/components/layout/TaskList";
 import { Megaphone, Users, PoundSterling } from "lucide-react";
@@ -46,6 +47,9 @@ const Index = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Revenue Chart */}
+        <RevenueChart />
 
         {/* Recent Campaigns */}
         <RecentCampaigns />
