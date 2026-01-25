@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, X, Check } from "lucide-react";
+import { Plus, X, Check, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ export function TaskList() {
   ]);
   const [newTask, setNewTask] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
 
   const addTask = () => {
     if (newTask.trim()) {
@@ -44,6 +46,23 @@ export function TaskList() {
 
   const removeTask = (id: string) => {
     setTasks(tasks.filter((task) => task.id !== id));
+  };
+
+  const startEditing = (task: Task) => {
+    setEditingId(task.id);
+    setEditText(task.text);
+  };
+
+  const saveEdit = () => {
+    if (editingId && editText.trim()) {
+      setTasks(
+        tasks.map((task) =>
+          task.id === editingId ? { ...task, text: editText.trim() } : task
+        )
+      );
+    }
+    setEditingId(null);
+    setEditText("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -103,14 +122,42 @@ export function TaskList() {
               onCheckedChange={() => toggleTask(task.id)}
               className="h-4 w-4"
             />
-            <span
-              className={cn(
-                "text-sm flex-1 truncate text-foreground",
-                task.completed && "line-through"
-              )}
-            >
-              {task.text}
-            </span>
+            {editingId === task.id ? (
+              <Input
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveEdit();
+                  if (e.key === "Escape") {
+                    setEditingId(null);
+                    setEditText("");
+                  }
+                }}
+                onBlur={saveEdit}
+                className="h-7 text-sm flex-1"
+                autoFocus
+              />
+            ) : (
+              <span
+                className={cn(
+                  "text-sm flex-1 truncate text-foreground cursor-pointer",
+                  task.completed && "line-through"
+                )}
+                onClick={() => !task.completed && startEditing(task)}
+              >
+                {task.text}
+              </span>
+            )}
+            {editingId !== task.id && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                onClick={() => startEditing(task)}
+              >
+                <Pencil className="h-3 w-3" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
