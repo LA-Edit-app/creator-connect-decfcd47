@@ -383,7 +383,7 @@ const CampaignTracker = () => {
                       />
                     </TableCell>
                     <TableCell>
-                      <EditableCell
+                      <DatePickerCell
                         value={campaign.liveDate}
                         onChange={(v) => updateCampaign(campaign.id, "liveDate", v)}
                         displayClassName="text-muted-foreground"
