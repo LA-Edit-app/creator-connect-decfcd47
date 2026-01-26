@@ -399,7 +399,7 @@ const CampaignTracker = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <span className="text-muted-foreground">
-                        {campaign.agPrice != null ? `£${(campaign.agPrice * 0.008).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "-"}
+                        {campaign.agPrice != null ? `£${(campaign.agPrice * 0.8).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "-"}
                       </span>
                     </TableCell>
                     <TableCell>
