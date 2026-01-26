@@ -393,12 +393,13 @@ const CampaignTracker = () => {
                         value={campaign.agPrice}
                         onChange={(v) => updateCampaign(campaign.id, "agPrice", v)}
                         type="number"
+                        formatAsCurrency
                         displayClassName="font-medium text-foreground justify-end"
                       />
                     </TableCell>
                     <TableCell className="text-right">
                       <span className="text-muted-foreground">
-                        {campaign.agPrice != null ? `£${(campaign.agPrice * 0.008).toFixed(2)}` : "-"}
+                        {campaign.agPrice != null ? `£${(campaign.agPrice * 0.008).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "-"}
                       </span>
                     </TableCell>
                     <TableCell>

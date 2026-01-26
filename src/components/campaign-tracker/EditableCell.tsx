@@ -10,6 +10,7 @@ interface EditableCellProps {
   className?: string;
   displayClassName?: string;
   placeholder?: string;
+  formatAsCurrency?: boolean;
 }
 
 export function EditableCell({
@@ -19,6 +20,7 @@ export function EditableCell({
   className,
   displayClassName,
   placeholder = "-",
+  formatAsCurrency = false,
 }: EditableCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value?.toString() ?? "");
@@ -96,7 +98,9 @@ export function EditableCell({
       ) : (
         <span className={value === null || value === "" ? "text-muted-foreground/50" : ""}>
           {type === "number" && typeof value === "number"
-            ? value.toLocaleString()
+            ? formatAsCurrency 
+              ? `£${value.toLocaleString("en-GB")}`
+              : value.toLocaleString("en-GB")
             : displayValue}
         </span>
       )}
