@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { CampaignChart } from "@/components/dashboard/CampaignChart";
+
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { RecentCampaigns } from "@/components/dashboard/RecentCampaigns";
 import { TaskList } from "@/components/layout/TaskList";
@@ -33,20 +33,15 @@ const Index = () => {
           />
         </div>
 
-        {/* Chart and Tasks Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <CampaignChart />
-          </div>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Tasks</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <TaskList />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Tasks Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Tasks</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <TaskList />
+          </CardContent>
+        </Card>
 
         {/* Revenue Chart */}
         <RevenueChart />
