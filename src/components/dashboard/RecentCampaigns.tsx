@@ -1,54 +1,48 @@
 import { Badge } from "@/components/ui/badge";
-
-const campaigns = [
-  {
-    id: 1,
-    name: "Summer Collection Launch",
-    creator: "Sarah Johnson",
-    status: "active",
-    budget: "£12,500",
-  },
-  {
-    id: 2,
-    name: "Tech Review Series",
-    creator: "Mike Chen",
-    status: "pending",
-    budget: "£8,000",
-  },
-  {
-    id: 3,
-    name: "Fitness Challenge 2024",
-    creator: "Emma Davis",
-    status: "active",
-    budget: "£15,000",
-  },
-  {
-    id: 4,
-    name: "Holiday Gift Guide",
-    creator: "Alex Thompson",
-    status: "completed",
-    budget: "£10,000",
-  },
-  {
-    id: 5,
-    name: "Gaming Tournament",
-    creator: "Chris Lee",
-    status: "active",
-    budget: "£20,000",
-  },
-];
+import { useRecentCampaigns } from "@/hooks/useCampaigns";
 
 const statusStyles = {
   active: "bg-green-100 text-green-700 hover:bg-green-100",
   pending: "bg-amber-100 text-amber-700 hover:bg-amber-100",
   completed: "bg-slate-100 text-slate-700 hover:bg-slate-100",
+  awaiting_details: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
 };
 
 export function RecentCampaigns() {
+  const { data: campaigns = [], isLoading, error } = useRecentCampaigns(5);
+
+  const getStatus = (campaign: {
+    complete: boolean;
+    campaign_status: string;
+    completion_status: string | null;
+    live_date: string | null;
+    launch_date: string | null;
+  }) => {
+    if (campaign.completion_status === "awaiting_details") return "awaiting_details" as const;
+    if (campaign.campaign_status === "completed") return "completed" as const;
+    if (campaign.campaign_status === "active") return "active" as const;
+    if (campaign.campaign_status === "pending") return "pending" as const;
+    if (campaign.complete) return "completed" as const;
+    if (campaign.live_date) return "active" as const;
+    if (campaign.launch_date) return "pending" as const;
+    return "pending" as const;
+  };
+
+  const getStatusLabel = (status: keyof typeof statusStyles) => {
+    if (status === "awaiting_details") return "AWAITING DETAILS";
+    return status;
+  };
+
+  const formatBudget = (value: number | null, currency: string) => {
+    if (!value) return "-";
+    const symbol = currency === "GBP" ? "£" : `${currency} `;
+    return `${symbol}${value.toLocaleString()}`;
+  };
+
   return (
     <div className="bg-card rounded-xl border border-border p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-foreground">Recent Campaigns</h3>
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-base font-semibold tracking-tight text-foreground">Recent Campaigns</h3>
         <a href="/campaigns" className="text-sm text-primary hover:underline">
           View all
         </a>
@@ -73,26 +67,54 @@ export function RecentCampaigns() {
             </tr>
           </thead>
           <tbody>
-            {campaigns.map((campaign) => (
+            {isLoading && (
+              <tr>
+                <td colSpan={4} className="py-6 px-4 text-center text-muted-foreground">
+                  Loading campaigns...
+                </td>
+              </tr>
+            )}
+
+            {!isLoading && error && (
+              <tr>
+                <td colSpan={4} className="py-6 px-4 text-center text-destructive">
+                  Failed to load campaigns
+                </td>
+              </tr>
+            )}
+
+            {!isLoading && !error && campaigns.length === 0 && (
+              <tr>
+                <td colSpan={4} className="py-6 px-4 text-center text-muted-foreground">
+                  No campaigns yet
+                </td>
+              </tr>
+            )}
+
+            {!isLoading && !error && campaigns.map((campaign) => {
+              const status = getStatus(campaign);
+
+              return (
               <tr
                 key={campaign.id}
                 className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors"
               >
                 <td className="py-3 px-4">
-                  <span className="font-medium text-foreground">{campaign.name}</span>
+                  <span className="font-medium text-foreground">{campaign.brand}</span>
                 </td>
-                <td className="py-3 px-4 text-muted-foreground">{campaign.creator}</td>
+                <td className="py-3 px-4 text-muted-foreground">{campaign.creators?.name || "-"}</td>
                 <td className="py-3 px-4">
                   <Badge
                     variant="secondary"
-                    className={statusStyles[campaign.status as keyof typeof statusStyles]}
+                    className={statusStyles[status]}
                   >
-                    {campaign.status}
+                    {getStatusLabel(status)}
                   </Badge>
                 </td>
-                <td className="py-3 px-4 text-foreground">{campaign.budget}</td>
+                <td className="py-3 px-4 text-foreground">{formatBudget(campaign.ag_price, campaign.currency)}</td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

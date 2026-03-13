@@ -16,11 +16,11 @@ export function StatCard({ icon, value, label, trend, className }: StatCardProps
   return (
     <div className={cn("stat-card", className)}>
       <div className="relative z-10">
-        <div className="stat-icon mb-4">
+        <div className="stat-icon mb-3 [&>svg]:h-5 [&>svg]:w-5">
           {icon}
         </div>
-        <p className="text-3xl font-bold text-foreground mb-1">{value}</p>
-        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="text-3xl font-bold tracking-tight text-foreground mb-1">{value}</p>
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
         {trend && (
           <p
             className={cn(

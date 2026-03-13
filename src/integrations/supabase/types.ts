@@ -14,7 +14,269 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      creators: {
+        Row: {
+          id: string
+          name: string
+          handle: string
+          avatar: string | null
+          email: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          handle: string
+          avatar?: string | null
+          email?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          handle?: string
+          avatar?: string | null
+          email?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      platforms: {
+        Row: {
+          id: string
+          name: string
+          icon: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          icon?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          icon?: string | null
+          created_at?: string
+        }
+      }
+      creator_platforms: {
+        Row: {
+          creator_id: string
+          platform_id: string
+          platform_handle: string | null
+          follower_count: number | null
+          engagement_rate: number | null
+          created_at: string
+        }
+        Insert: {
+          creator_id: string
+          platform_id: string
+          platform_handle?: string | null
+          follower_count?: number | null
+          engagement_rate?: number | null
+          created_at?: string
+        }
+        Update: {
+          creator_id?: string
+          platform_id?: string
+          platform_handle?: string | null
+          follower_count?: number | null
+          engagement_rate?: number | null
+          created_at?: string
+        }
+      }
+      campaigns: {
+        Row: {
+          id: string
+          creator_id: string
+          brand: string
+          launch_date: string | null
+          activity: string | null
+          live_date: string | null
+          ag_price: number | null
+          creator_fee: number | null
+          shot: string | null
+          complete: boolean
+          campaign_status: string
+          completion_status: string | null
+          invoice_no: string | null
+          paid_date: string | null
+          includes_vat: string | null
+          currency: string
+          brand_pos: string | null
+          payment_terms: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          creator_id: string
+          brand: string
+          launch_date?: string | null
+          activity?: string | null
+          live_date?: string | null
+          ag_price?: number | null
+          creator_fee?: number | null
+          shot?: string | null
+          complete?: boolean
+          campaign_status?: string
+          completion_status?: string | null
+          invoice_no?: string | null
+          paid_date?: string | null
+          includes_vat?: string | null
+          currency?: string
+          brand_pos?: string | null
+          payment_terms?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          creator_id?: string
+          brand?: string
+          launch_date?: string | null
+          activity?: string | null
+          live_date?: string | null
+          ag_price?: number | null
+          creator_fee?: number | null
+          shot?: string | null
+          complete?: boolean
+          campaign_status?: string
+          completion_status?: string | null
+          invoice_no?: string | null
+          paid_date?: string | null
+          includes_vat?: string | null
+          currency?: string
+          brand_pos?: string | null
+          payment_terms?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      content_items: {
+        Row: {
+          id: string
+          campaign_id: string
+          type: 'image' | 'video' | 'reel' | 'story' | 'carousel'
+          title: string
+          url: string | null
+          thumbnail: string | null
+          platform: string
+          status: 'draft' | 'pending' | 'approved' | 'published'
+          due_date: string | null
+          notes: string | null
+          source: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          campaign_id: string
+          type: 'image' | 'video' | 'reel' | 'story' | 'carousel'
+          title: string
+          url?: string | null
+          thumbnail?: string | null
+          platform: string
+          status?: 'draft' | 'pending' | 'approved' | 'published'
+          due_date?: string | null
+          notes?: string | null
+          source?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          campaign_id?: string
+          type?: 'image' | 'video' | 'reel' | 'story' | 'carousel'
+          title?: string
+          url?: string | null
+          thumbnail?: string | null
+          platform?: string
+          status?: 'draft' | 'pending' | 'approved' | 'published'
+          due_date?: string | null
+          notes?: string | null
+          source?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      profiles: {
+        Row: {
+          id: string
+          email: string | null
+          first_name: string | null
+          last_name: string | null
+          role: 'user' | 'admin' | 'agency'
+          agency_name: string | null
+          avatar_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          role?: 'user' | 'admin' | 'agency'
+          agency_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          role?: 'user' | 'admin' | 'agency'
+          agency_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      tasks: {
+        Row: {
+          id: string
+          title: string
+          completed: boolean
+          sort_order: number
+          related_creator_id: string | null
+          related_campaign_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          completed?: boolean
+          sort_order?: number
+          related_creator_id?: string | null
+          related_campaign_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          completed?: boolean
+          sort_order?: number
+          related_creator_id?: string | null
+          related_campaign_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
