@@ -43,7 +43,7 @@ export function RecentCampaigns() {
     <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-base font-semibold tracking-tight text-foreground">Recent Campaigns</h3>
-        <a href="/campaigns" className="text-sm text-primary hover:underline">
+        <a href="/campaign-tracker" className="text-sm text-primary hover:underline">
           View all
         </a>
       </div>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Plus, Trash2, ArrowLeft, Eye, Upload, ZoomIn, ZoomOut, RefreshCw } from "lucide-react";
+import { Search, Filter, Plus, Trash2, ArrowLeft, Eye, Upload, Download, ZoomIn, ZoomOut, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -454,6 +454,31 @@ const CampaignTracker = () => {
     }
   };
 
+  const downloadTemplate = async () => {
+    const XLSX = await import("xlsx");
+    const templateRow = {
+      Brand: "",
+      "Launch Date": "",
+      Activity: "",
+      "Live Date": "",
+      "AG Price": "",
+      "Creator Fee": "",
+      Shot: "",
+      Status: "Pending",
+      "Invoice No": "",
+      "Paid Date": "",
+      "Includes VAT": "",
+      Currency: "GBP",
+      "Brand PO": "",
+      "Payment Terms": "",
+      Notes: "",
+    };
+    const ws = XLSX.utils.json_to_sheet([templateRow]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Campaigns");
+    XLSX.writeFile(wb, "campaign-tracker-template.xlsx");
+  };
+
   const handleExcelUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !selectedCreator) return;
@@ -724,6 +749,14 @@ const CampaignTracker = () => {
             >
               <RefreshCw className={`w-4 h-4 ${syncCampaignsFromXero.isPending ? "animate-spin" : ""}`} />
               {syncCampaignsFromXero.isPending ? "Syncing Xero..." : "Sync Xero"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => void downloadTemplate()}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Template
             </Button>
             <Button
               variant="outline"

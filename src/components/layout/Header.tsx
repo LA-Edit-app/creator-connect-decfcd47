@@ -1,8 +1,8 @@
-import { Bell, Search, LogOut } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { GlobalSearch } from "./GlobalSearch";
 
 interface HeaderProps {
   title: string;
@@ -22,13 +22,7 @@ export function Header({ title }: HeaderProps) {
       <h1 className="text-lg font-semibold text-foreground">{title}</h1>
       
       <div className="flex items-center gap-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            className="pl-9 w-64 bg-background"
-          />
-        </div>
+        <GlobalSearch />
         
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5" />
