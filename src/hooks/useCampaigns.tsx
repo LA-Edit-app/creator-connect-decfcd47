@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { useAgencyId } from './useDatabase';
 
 type Campaign = Database['public']['Tables']['campaigns']['Row'];
 type CampaignInsert = Database['public']['Tables']['campaigns']['Insert'];
@@ -226,12 +227,18 @@ export const useRecentCampaigns = (limit = 5) => {
 // Create a new campaign
 export const useCreateCampaign = () => {
   const queryClient = useQueryClient();
+  const { data: agencyId } = useAgencyId();
 
   return useMutation({
     mutationFn: async (campaign: CampaignInsert) => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('campaigns')
-        .insert(campaign)
+        .insert({
+          ...campaign,
+          agency_id: campaign.agency_id ?? agencyId ?? undefined,
+          created_by: campaign.created_by ?? user?.id ?? undefined,
+        })
         .select(`
           *,
           creators (

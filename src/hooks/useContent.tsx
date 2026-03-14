@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { useAgencyId } from './useDatabase';
 
 type ContentItem = Database['public']['Tables']['content_items']['Row'];
 type ContentItemInsert = Database['public']['Tables']['content_items']['Insert'];
@@ -113,12 +114,18 @@ export const useContentItem = (contentItemId: string | undefined) => {
 // Create a new content item
 export const useCreateContentItem = () => {
   const queryClient = useQueryClient();
+  const { data: agencyId } = useAgencyId();
 
   return useMutation({
     mutationFn: async (contentItem: ContentItemInsert) => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('content_items')
-        .insert(contentItem)
+        .insert({
+          ...contentItem,
+          agency_id: contentItem.agency_id ?? agencyId ?? undefined,
+          created_by: contentItem.created_by ?? user?.id ?? undefined,
+        })
         .select()
         .single();
 
@@ -190,12 +197,19 @@ export const useDeleteContentItem = () => {
 // Bulk create content items
 export const useBulkCreateContentItems = () => {
   const queryClient = useQueryClient();
+  const { data: agencyId } = useAgencyId();
 
   return useMutation({
     mutationFn: async (contentItems: ContentItemInsert[]) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const enriched = contentItems.map((item) => ({
+        ...item,
+        agency_id: item.agency_id ?? agencyId ?? undefined,
+        created_by: item.created_by ?? user?.id ?? undefined,
+      }));
       const { data, error } = await supabase
         .from('content_items')
-        .insert(contentItems)
+        .insert(enriched)
         .select();
 
       if (error) throw error;

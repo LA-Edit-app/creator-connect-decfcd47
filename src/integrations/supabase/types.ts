@@ -14,6 +14,29 @@ export type Database = {
   }
   public: {
     Tables: {
+      agencies: {
+        Row: {
+          id: string
+          name: string
+          owner_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          owner_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          owner_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       creators: {
         Row: {
           id: string
@@ -22,6 +45,8 @@ export type Database = {
           avatar: string | null
           email: string | null
           is_active: boolean
+          agency_id: string | null
+          created_by: string | null
           created_at: string
           updated_at: string
         }
@@ -32,6 +57,8 @@ export type Database = {
           avatar?: string | null
           email?: string | null
           is_active?: boolean
+          agency_id?: string | null
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -42,6 +69,8 @@ export type Database = {
           avatar?: string | null
           email?: string | null
           is_active?: boolean
+          agency_id?: string | null
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -113,6 +142,8 @@ export type Database = {
           brand_pos: string | null
           payment_terms: string | null
           notes: string | null
+          agency_id: string | null
+          created_by: string | null
           created_at: string
           updated_at: string
         }
@@ -136,6 +167,8 @@ export type Database = {
           brand_pos?: string | null
           payment_terms?: string | null
           notes?: string | null
+          agency_id?: string | null
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -159,6 +192,8 @@ export type Database = {
           brand_pos?: string | null
           payment_terms?: string | null
           notes?: string | null
+          agency_id?: string | null
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -176,6 +211,8 @@ export type Database = {
           due_date: string | null
           notes: string | null
           source: string | null
+          agency_id: string | null
+          created_by: string | null
           created_at: string
           updated_at: string
         }
@@ -191,6 +228,8 @@ export type Database = {
           due_date?: string | null
           notes?: string | null
           source?: string | null
+          agency_id?: string | null
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -206,6 +245,8 @@ export type Database = {
           due_date?: string | null
           notes?: string | null
           source?: string | null
+          agency_id?: string | null
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -218,6 +259,7 @@ export type Database = {
           last_name: string | null
           role: 'user' | 'admin' | 'agency'
           agency_name: string | null
+          agency_id: string | null
           avatar_url: string | null
           created_at: string
           updated_at: string
@@ -229,6 +271,7 @@ export type Database = {
           last_name?: string | null
           role?: 'user' | 'admin' | 'agency'
           agency_name?: string | null
+          agency_id?: string | null
           avatar_url?: string | null
           created_at?: string
           updated_at?: string
@@ -240,6 +283,7 @@ export type Database = {
           last_name?: string | null
           role?: 'user' | 'admin' | 'agency'
           agency_name?: string | null
+          agency_id?: string | null
           avatar_url?: string | null
           created_at?: string
           updated_at?: string
@@ -253,6 +297,8 @@ export type Database = {
           sort_order: number
           related_creator_id: string | null
           related_campaign_id: string | null
+          agency_id: string | null
+          created_by: string | null
           created_at: string
           updated_at: string
         }
@@ -263,6 +309,8 @@ export type Database = {
           sort_order?: number
           related_creator_id?: string | null
           related_campaign_id?: string | null
+          agency_id?: string | null
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -273,6 +321,8 @@ export type Database = {
           sort_order?: number
           related_creator_id?: string | null
           related_campaign_id?: string | null
+          agency_id?: string | null
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -282,7 +332,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_agency_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string | null
+      }
     }
     Enums: {
       [_ in never]: never

@@ -64,6 +64,30 @@ export const useCreatePlatform = () => {
   });
 };
 
+// Get current user's agency_id (cached — same query key as profile)
+export const useAgencyId = () => {
+  return useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as Profile | null;
+    },
+    select: (profile) => profile?.agency_id ?? null,
+  });
+};
+
 // Get current user's profile
 export const useProfile = () => {
   return useQuery({

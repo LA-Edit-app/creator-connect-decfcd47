@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { useAgencyId } from './useDatabase';
 
 type Creator = Database['public']['Tables']['creators']['Row'];
 type CreatorInsert = Database['public']['Tables']['creators']['Insert'];
@@ -135,12 +136,18 @@ export const useCreatorByHandle = (handle: string | undefined) => {
 // Create a new creator
 export const useCreateCreator = () => {
   const queryClient = useQueryClient();
+  const { data: agencyId } = useAgencyId();
 
   return useMutation({
     mutationFn: async (creator: CreatorInsert) => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('creators')
-        .insert(creator)
+        .insert({
+          ...creator,
+          agency_id: creator.agency_id ?? agencyId ?? undefined,
+          created_by: creator.created_by ?? user?.id ?? undefined,
+        })
         .select()
         .single();
 

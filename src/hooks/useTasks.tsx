@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { useAgencyId } from "./useDatabase";
 
 type Task = Database["public"]["Tables"]["tasks"]["Row"];
 type TaskInsert = Database["public"]["Tables"]["tasks"]["Insert"];
@@ -39,12 +40,18 @@ export const useTasks = () => {
 
 export const useCreateTask = () => {
   const queryClient = useQueryClient();
+  const { data: agencyId } = useAgencyId();
 
   return useMutation({
     mutationFn: async (task: TaskInsert) => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("tasks")
-        .insert(task)
+        .insert({
+          ...task,
+          agency_id: task.agency_id ?? agencyId ?? undefined,
+          created_by: task.created_by ?? user?.id ?? undefined,
+        })
         .select()
         .single();
 

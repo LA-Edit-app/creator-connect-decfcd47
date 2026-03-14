@@ -38,7 +38,7 @@ export function GlobalSearch() {
       type: "creator" as const,
       id: c.id,
       label: c.name,
-      sub: `@${c.handle}`,
+      sub: `${c.handle}`,
     })),
     ...matchedCampaigns.map((c) => ({
       type: "campaign" as const,
