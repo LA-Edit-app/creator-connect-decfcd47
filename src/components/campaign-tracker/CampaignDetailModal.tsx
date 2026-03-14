@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +65,10 @@ export const CampaignDetailModal = ({
 }: CampaignDetailModalProps) => {
   const [activeTab, setActiveTab] = useState("details");
   const [notes, setNotes] = useState(campaign?.notes || "");
+
+  useEffect(() => {
+    setNotes(campaign?.notes || "");
+  }, [campaign?.id]);
   const [showAddContent, setShowAddContent] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);

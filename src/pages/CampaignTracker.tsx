@@ -520,8 +520,9 @@ const CampaignTracker = () => {
             paid_date: row.Paid || row.paid || null,
             includes_vat: row["Includes VAT"] || row.includesVat || null,
             currency: row.Currency || row.currency || "GBP",
-            brand_pos: row["Brand POs"] || row.brandPOs || null,
+            brand_pos: row["Brand POs"] || row["Brand PO"] || row.brandPOs || null,
             payment_terms: row["Payment Terms"] || row.paymentTerms || null,
+            notes: row.Notes || row.notes || null,
           });
         }
 
