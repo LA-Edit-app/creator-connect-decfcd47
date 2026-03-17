@@ -83,6 +83,9 @@ export function Sidebar() {
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="p-1.5 rounded-lg hover:bg-sidebar-accent transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 text-sidebar-foreground" />
+          </button>
         )}
       </div>
 
