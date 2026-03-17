@@ -4,6 +4,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { RecentCampaigns } from "@/components/dashboard/RecentCampaigns";
 import { TaskList } from "@/components/layout/TaskList";
+import { UpcomingEventsCalendar } from "@/components/dashboard/UpcomingEventsCalendar";
 import { Megaphone, Users, PoundSterling } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCampaignStats } from "@/hooks/useCampaigns";
@@ -55,6 +56,9 @@ const Index = () => {
             <TaskList />
           </CardContent>
         </Card>
+
+        {/* Upcoming Events Calendar */}
+        <UpcomingEventsCalendar />
 
         {/* Revenue Chart */}
         <RevenueChart />

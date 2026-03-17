@@ -194,6 +194,80 @@ export const useRevenueByMonth = () => {
   });
 };
 
+export interface CampaignEvent {
+  id: string;           // unique key: `${campaign_id}-${type}`
+  campaignId: string;
+  type: 'launch' | 'live';
+  date: string;         // ISO date string
+  brand: string;
+  creatorName: string;
+  creatorEmail: string | null;
+  campaignStatus: string;
+}
+
+export const useUpcomingCampaignEvents = () => {
+  return useQuery({
+    queryKey: ['campaigns', 'upcoming-events'],
+    queryFn: async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayIso = today.toISOString().split('T')[0];
+
+      const { data, error } = await supabase
+        .from('campaigns')
+        .select(`
+          id,
+          brand,
+          campaign_status,
+          launch_date,
+          live_date,
+          creators (
+            name,
+            email
+          )
+        `)
+        .or(`launch_date.gte.${todayIso},live_date.gte.${todayIso}`)
+        .order('launch_date', { ascending: true });
+
+      if (error) throw error;
+
+      const events: CampaignEvent[] = [];
+
+      for (const c of data) {
+        const creatorName = (c.creators as { name: string; email: string | null } | null)?.name ?? 'Unknown Creator';
+        const creatorEmail = (c.creators as { name: string; email: string | null } | null)?.email ?? null;
+
+        if (c.launch_date && c.launch_date >= todayIso) {
+          events.push({
+            id: `${c.id}-launch`,
+            campaignId: c.id,
+            type: 'launch',
+            date: c.launch_date,
+            brand: c.brand,
+            creatorName,
+            creatorEmail,
+            campaignStatus: c.campaign_status,
+          });
+        }
+        if (c.live_date && c.live_date >= todayIso) {
+          events.push({
+            id: `${c.id}-live`,
+            campaignId: c.id,
+            type: 'live',
+            date: c.live_date,
+            brand: c.brand,
+            creatorName,
+            creatorEmail,
+            campaignStatus: c.campaign_status,
+          });
+        }
+      }
+
+      return events.sort((a, b) => a.date.localeCompare(b.date));
+    },
+  });
+};
+
 export const useRecentCampaigns = (limit = 5) => {
   return useQuery({
     queryKey: ['campaigns', 'recent', limit],
