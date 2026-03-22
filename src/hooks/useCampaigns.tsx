@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { useAgencyId } from './useDatabase';
 import { useCustomEvents, type CalendarEvent } from './useCustomEvents';
+import { useCreateNotification } from './useNotifications';
 
 // Attempt to parse any date string the campaign tracker might store, and
 // return a canonical YYYY-MM-DD string. Returns null when genuinely unparseable.
@@ -381,6 +382,7 @@ export const useRecentCampaigns = (limit = 5) => {
 export const useCreateCampaign = () => {
   const queryClient = useQueryClient();
   const { data: agencyId } = useAgencyId();
+  const createNotification = useCreateNotification();
 
   return useMutation({
     mutationFn: async (campaign: CampaignInsert) => {
@@ -410,6 +412,19 @@ export const useCreateCampaign = () => {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
       queryClient.invalidateQueries({ queryKey: ['campaigns', 'creator', data.creator_id] });
       queryClient.invalidateQueries({ queryKey: ['campaigns', 'stats'] });
+      
+      // Trigger notification for campaign creation
+      createNotification.mutate({
+        type: 'campaign_alert',
+        title: 'New Campaign Created',
+        message: `Campaign "${data.brand}" has been created${data.creators?.name ? ` for creator ${data.creators.name}` : ''}.`,
+        data: {
+          campaignId: data.id,
+          brand: data.brand,
+          creatorName: data.creators?.name,
+          action: 'created'
+        }
+      });
     },
   });
 };
@@ -417,6 +432,7 @@ export const useCreateCampaign = () => {
 // Update a campaign
 export const useUpdateCampaign = () => {
   const queryClient = useQueryClient();
+  const createNotification = useCreateNotification();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: CampaignUpdate }) => {
@@ -444,6 +460,37 @@ export const useUpdateCampaign = () => {
       queryClient.invalidateQueries({ queryKey: ['campaign', data.id] });
       queryClient.invalidateQueries({ queryKey: ['campaigns', 'creator', data.creator_id] });
       queryClient.invalidateQueries({ queryKey: ['campaigns', 'stats'] });
+      
+      // Trigger notification for significant campaign updates
+      let notificationTitle = 'Campaign Updated';
+      let notificationMessage = `Campaign "${data.brand}" has been updated.`;
+      
+      // Check for specific important updates
+      if (updates.complete !== undefined) {
+        if (updates.complete) {
+          notificationTitle = 'Campaign Completed';
+          notificationMessage = `Campaign "${data.brand}" has been marked as completed.`;
+        } else {
+          notificationTitle = 'Campaign Reopened';
+          notificationMessage = `Campaign "${data.brand}" has been reopened.`;
+        }
+      } else if (updates.live_date || updates.launch_date) {
+        notificationTitle = 'Campaign Scheduled';
+        notificationMessage = `Campaign "${data.brand}" dates have been updated.`;
+      }
+      
+      createNotification.mutate({
+        type: 'campaign_alert',
+        title: notificationTitle,
+        message: notificationMessage,
+        data: {
+          campaignId: data.id,
+          brand: data.brand,
+          creatorName: data.creators?.name,
+          action: 'updated',
+          updates: updates
+        }
+      });
     },
   });
 };

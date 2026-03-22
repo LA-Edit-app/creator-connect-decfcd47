@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAgencyId } from "./useDatabase";
+import { useCreateNotification } from "./useNotifications";
 
 // Types for custom events
 export interface CustomEvent {
@@ -44,6 +45,7 @@ export const useCustomEvents = () => {
 export const useCreateCustomEvent = () => {
   const queryClient = useQueryClient();
   const { data: agencyId } = useAgencyId();
+  const createNotification = useCreateNotification();
 
   return useMutation({
     mutationFn: async (event: CustomEventInsert) => {
@@ -61,9 +63,23 @@ export const useCreateCustomEvent = () => {
       if (error) throw error;
       return data as CustomEvent;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["custom-events"] });
       queryClient.invalidateQueries({ queryKey: ["all-calendar-events"] });
+      
+      // Trigger notification for custom event creation
+      createNotification.mutate({
+        type: 'custom_event',
+        title: 'New Calendar Event Added',
+        message: `A new event "${data.title}" has been added to the calendar${data.event_date ? ` for ${new Date(data.event_date).toLocaleDateString()}` : ''}.`,
+        data: {
+          eventId: data.id,
+          eventTitle: data.title,
+          eventDate: data.event_date,
+          allDay: data.all_day,
+          action: 'created'
+        }
+      });
     },
   });
 };

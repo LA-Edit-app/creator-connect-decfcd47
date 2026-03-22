@@ -32,8 +32,6 @@ interface Task {
   } | null;
 }
 
-type TaskRelationFilter = "all" | "creator" | "campaign";
-
 export function TaskList() {
   const navigate = useNavigate();
   const { data: tasks = [], isLoading, error } = useTasks();
@@ -79,9 +77,6 @@ export function TaskList() {
         });
         setNewTask("");
         setIsAdding(false);
-        setRelationType("none");
-        setRelatedCreatorId("");
-        setRelatedCampaignId("");
         setAssigneeId("");
       } catch (mutationError: any) {
         toast.error(mutationError?.message || "Failed to create task");

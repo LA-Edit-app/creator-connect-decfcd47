@@ -133,6 +133,50 @@ export type Database = {
           updated_at?: string
         }
       }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          agency_id: string
+          type: 'campaign_alert' | 'creator_update' | 'weekly_report' | 'email_notification' | 'task_assignment' | 'custom_event'
+          title: string
+          message: string
+          data: Json | null
+          read: boolean
+          email_sent: boolean
+          email_sent_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          agency_id: string
+          type: 'campaign_alert' | 'creator_update' | 'weekly_report' | 'email_notification' | 'task_assignment' | 'custom_event'
+          title: string
+          message: string
+          data?: Json | null
+          read?: boolean
+          email_sent?: boolean
+          email_sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          agency_id?: string
+          type?: 'campaign_alert' | 'creator_update' | 'weekly_report' | 'email_notification' | 'task_assignment' | 'custom_event'
+          title?: string
+          message?: string
+          data?: Json | null
+          read?: boolean
+          email_sent?: boolean
+          email_sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       platforms: {
         Row: {
           id: string
@@ -360,6 +404,10 @@ export type Database = {
           agency_name: string | null
           agency_id: string | null
           avatar_url: string | null
+          email_notifications: boolean
+          campaign_alerts: boolean
+          weekly_reports: boolean
+          creator_updates: boolean
           created_at: string
           updated_at: string
         }
@@ -372,6 +420,10 @@ export type Database = {
           agency_name?: string | null
           agency_id?: string | null
           avatar_url?: string | null
+          email_notifications?: boolean
+          campaign_alerts?: boolean
+          weekly_reports?: boolean
+          creator_updates?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -384,6 +436,10 @@ export type Database = {
           agency_name?: string | null
           agency_id?: string | null
           avatar_url?: string | null
+          email_notifications?: boolean
+          campaign_alerts?: boolean
+          weekly_reports?: boolean
+          creator_updates?: boolean
           created_at?: string
           updated_at?: string
         }

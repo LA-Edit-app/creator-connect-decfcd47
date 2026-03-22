@@ -11,6 +11,7 @@ import { useProfile, useUpdateProfile } from "@/hooks/useDatabase";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { NotificationDebug } from "@/components/debug/NotificationDebug";
 
 const Settings = () => {
   const { user } = useAuth();
@@ -19,6 +20,10 @@ const Settings = () => {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [campaignAlerts, setCampaignAlerts] = useState(true);
+  const [weeklyReports, setWeeklyReports] = useState(false);
+  const [creatorUpdates, setCreatorUpdates] = useState(true);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [updatingPassword, setUpdatingPassword] = useState(false);
@@ -27,12 +32,23 @@ const Settings = () => {
     if (profile) {
       setFirstName(profile.first_name ?? "");
       setLastName(profile.last_name ?? "");
+      setEmailNotifications(profile.email_notifications ?? true);
+      setCampaignAlerts(profile.campaign_alerts ?? true);
+      setWeeklyReports(profile.weekly_reports ?? false);
+      setCreatorUpdates(profile.creator_updates ?? true);
     }
   }, [profile]);
 
   const handleSaveProfile = () => {
     updateProfile.mutate(
-      { first_name: firstName, last_name: lastName },
+      { 
+        first_name: firstName, 
+        last_name: lastName,
+        email_notifications: emailNotifications,
+        campaign_alerts: campaignAlerts,
+        weekly_reports: weeklyReports,
+        creator_updates: creatorUpdates,
+      },
       {
         onSuccess: () => toast.success("Profile saved"),
         onError: () => toast.error("Failed to save profile"),
@@ -137,7 +153,11 @@ const Settings = () => {
                 <p className="font-medium text-foreground">Email Notifications</p>
                 <p className="text-sm text-muted-foreground">Receive email updates about campaign activity</p>
               </div>
-              <Switch defaultChecked />
+              <Switch 
+                checked={emailNotifications} 
+                onCheckedChange={setEmailNotifications}
+                disabled={updateProfile.isPending}
+              />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -145,7 +165,11 @@ const Settings = () => {
                 <p className="font-medium text-foreground">Campaign Alerts</p>
                 <p className="text-sm text-muted-foreground">Get notified when campaigns start or end</p>
               </div>
-              <Switch defaultChecked />
+              <Switch 
+                checked={campaignAlerts} 
+                onCheckedChange={setCampaignAlerts}
+                disabled={updateProfile.isPending}
+              />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -153,7 +177,11 @@ const Settings = () => {
                 <p className="font-medium text-foreground">Weekly Reports</p>
                 <p className="text-sm text-muted-foreground">Receive weekly performance summaries</p>
               </div>
-              <Switch />
+              <Switch 
+                checked={weeklyReports} 
+                onCheckedChange={setWeeklyReports}
+                disabled={updateProfile.isPending}
+              />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -161,8 +189,22 @@ const Settings = () => {
                 <p className="font-medium text-foreground">Creator Updates</p>
                 <p className="text-sm text-muted-foreground">Notifications about creator activity</p>
               </div>
-              <Switch defaultChecked />
+              <Switch 
+                checked={creatorUpdates} 
+                onCheckedChange={setCreatorUpdates}
+                disabled={updateProfile.isPending}
+              />
             </div>
+          </div>
+          
+          <div className="mt-6">
+            <Button
+              onClick={handleSaveProfile}
+              disabled={updateProfile.isPending || isLoading}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {updateProfile.isPending ? "Saving..." : "Save Notification Preferences"}
+            </Button>
           </div>
         </div>
 
@@ -196,6 +238,12 @@ const Settings = () => {
               {updatingPassword ? "Updating..." : "Update Password"}
             </Button>
           </div>
+        </div>
+
+        {/* Debug Section */}
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h3 className="text-lg font-semibold text-foreground mb-6">Notification Debug</h3>
+          <NotificationDebug />
         </div>
       </div>
     </DashboardLayout>
