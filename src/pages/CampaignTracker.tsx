@@ -79,19 +79,10 @@ const normalizeCampaignStatus = (value: string | null | undefined): "pending" | 
   return "pending";
 };
 
-type TrackerView = "all" | "active" | "pending" | "history";
-
 type TrackerNavigationState = {
   campaignId?: string;
   creatorId?: string;
   openDetailReadonly?: boolean;
-};
-
-const TRACKER_VIEW_LABELS: Record<TrackerView, string> = {
-  all: "All",
-  active: "Active",
-  pending: "Pending",
-  history: "History",
 };
 
 const CampaignTracker = () => {
@@ -105,7 +96,6 @@ const CampaignTracker = () => {
   const syncCampaignsFromXero = useSyncCampaignsFromXero();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [trackerView, setTrackerView] = useState<TrackerView>("all");
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignData | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -171,47 +161,10 @@ const CampaignTracker = () => {
     return "pending";
   };
 
-  const isCampaignInCurrentView = (campaign: CampaignData) => {
-    if (trackerView === "all") {
-      return true;
-    }
-    const status = getCampaignStatus(campaign);
-    if (trackerView === "active") {
-      return status === "active";
-    }
-    if (trackerView === "pending") {
-      return status === "pending";
-    }
-    return status === "completed";
-  };
-
-  const activeCampaignCount = useMemo(
-    () => campaigns.filter((campaign) => getCampaignStatus(campaign) === "active").length,
-    [campaigns]
-  );
-
-  const allCampaignCount = campaigns.length;
-
-  const historyCampaignCount = useMemo(
-    () =>
-      campaigns.filter((campaign) => {
-        const status = getCampaignStatus(campaign);
-        return status === "completed";
-      }).length,
-    [campaigns]
-  );
-
-  const pendingCampaignCount = useMemo(
-    () => campaigns.filter((campaign) => getCampaignStatus(campaign) === "pending").length,
-    [campaigns]
-  );
-
   const creatorCampaigns = useMemo(() => {
     if (!selectedCreator) return [];
-    return campaigns.filter(
-      (campaign) => campaign.creatorId === selectedCreator.id && isCampaignInCurrentView(campaign)
-    );
-  }, [campaigns, selectedCreator, trackerView]);
+    return campaigns.filter((campaign) => campaign.creatorId === selectedCreator.id);
+  }, [campaigns, selectedCreator]);
 
   const syncFromXero = async (creatorId: string, mode: "auto" | "manual") => {
     try {
@@ -250,7 +203,6 @@ const CampaignTracker = () => {
       const targetCreator = creators.find((creator) => creator.id === targetCreatorId);
       if (targetCreator) {
         setSelectedCreator(targetCreator);
-        setTrackerView("all");
       }
       navigate(location.pathname, { replace: true, state: null });
       return;
@@ -266,9 +218,6 @@ const CampaignTracker = () => {
     if (targetCreator && (!selectedCreator || selectedCreator.id !== targetCreator.id)) {
       setSelectedCreator(targetCreator);
     }
-
-    const targetStatus = getCampaignStatus(targetCampaign);
-    setTrackerView(targetStatus === "completed" ? "history" : targetStatus);
 
     setSearchQuery(targetCampaign.brand || "");
     setSelectedCampaign(targetCampaign);
@@ -320,46 +269,11 @@ const CampaignTracker = () => {
     void syncFromXero(selectedCreator.id, "auto");
   }, [selectedCreator?.id]);
 
-  const creatorsWithActiveCampaigns = useMemo(() => {
-    return creators.filter((creator) =>
-      campaigns.some(
-        (campaign) => campaign.creatorId === creator.id && getCampaignStatus(campaign) === "active"
-      )
-    );
-  }, [campaigns, creators]);
-
-  const creatorsWithHistoryCampaigns = useMemo(() => {
-    return creators.filter((creator) =>
-      campaigns.some(
-        (campaign) =>
-          campaign.creatorId === creator.id &&
-          getCampaignStatus(campaign) === "completed"
-      )
-    );
-  }, [campaigns, creators]);
-
-  const creatorsWithPendingCampaigns = useMemo(() => {
-    return creators.filter((creator) =>
-      campaigns.some(
-        (campaign) => campaign.creatorId === creator.id && getCampaignStatus(campaign) === "pending"
-      )
-    );
-  }, [campaigns, creators]);
-
   const creatorsWithAnyCampaigns = useMemo(() => {
     return creators.filter((creator) =>
       campaigns.some((campaign) => campaign.creatorId === creator.id)
     );
   }, [campaigns, creators]);
-
-  const creatorsForCurrentView =
-    trackerView === "all"
-      ? creatorsWithAnyCampaigns
-      : trackerView === "active"
-      ? creatorsWithActiveCampaigns
-      : trackerView === "pending"
-        ? creatorsWithPendingCampaigns
-        : creatorsWithHistoryCampaigns;
 
   const updateCampaign = async (id: string | number, field: keyof CampaignData, value: string) => {
     const campaignId = String(id);
@@ -447,7 +361,7 @@ const CampaignTracker = () => {
         creator_id: selectedCreator.id,
         brand: "Untitled Campaign",
         currency: "GBP",
-        campaign_status: trackerView === "history" ? "completed" : normalizeCampaignStatus(trackerView),
+        campaign_status: "pending",
       });
       toast.success("New row added");
     } catch (mutationError: any) {
@@ -624,25 +538,6 @@ const CampaignTracker = () => {
   if (!selectedCreator) {
     return (
       <DashboardLayout title="Campaign Tracker">
-        <div className="mb-3 lg:mb-4 flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground">View</span>
-          <Select value={trackerView} onValueChange={(value) => setTrackerView(value as TrackerView)}>
-            <SelectTrigger className="h-8 w-[190px] text-xs">
-              <SelectValue placeholder="Select view" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All ({allCampaignCount})</SelectItem>
-              <SelectItem value="active">Active ({activeCampaignCount})</SelectItem>
-              <SelectItem value="pending">Pending ({pendingCampaignCount})</SelectItem>
-              <SelectItem value="history">History ({historyCampaignCount})</SelectItem>
-            </SelectContent>
-          </Select>
-          {trackerView !== "all" && (
-            <Badge variant="secondary" className="text-[10px] font-medium">
-              Showing {TRACKER_VIEW_LABELS[trackerView].toLowerCase()} campaigns
-            </Badge>
-          )}
-        </div>
         <div className="flex justify-end mb-4">
           <Button
             className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -653,17 +548,9 @@ const CampaignTracker = () => {
           </Button>
         </div>
         <CreatorSelector
-          creators={creatorsForCurrentView}
+          creators={creatorsWithAnyCampaigns}
           onSelect={setSelectedCreator}
-          emptyStateMessage={
-            trackerView === "all"
-              ? "No creators with campaigns"
-              : trackerView === "active"
-              ? "No creators with active campaigns"
-              : trackerView === "pending"
-                ? "No creators with pending campaigns"
-                : "No creators with completed campaigns"
-          }
+          emptyStateMessage="No creators with campaigns"
         />
         <CreateCampaignDialog
           open={isCreateCampaignOpen}
@@ -678,33 +565,6 @@ const CampaignTracker = () => {
   return (
     <DashboardLayout title="Campaign Tracker">
       <div className="space-y-5 lg:space-y-6 animate-fade-in">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground">View</span>
-          <Select
-            value={trackerView}
-            onValueChange={(value) => {
-              setTrackerView(value as TrackerView);
-              setSelectedCreator(null);
-              setSearchQuery("");
-            }}
-          >
-            <SelectTrigger className="h-8 w-[190px] text-xs">
-              <SelectValue placeholder="Select view" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All ({allCampaignCount})</SelectItem>
-              <SelectItem value="active">Active ({activeCampaignCount})</SelectItem>
-              <SelectItem value="pending">Pending ({pendingCampaignCount})</SelectItem>
-              <SelectItem value="history">History ({historyCampaignCount})</SelectItem>
-            </SelectContent>
-          </Select>
-          {trackerView !== "all" && (
-            <Badge variant="secondary" className="text-[10px] font-medium">
-              Showing {TRACKER_VIEW_LABELS[trackerView].toLowerCase()} campaigns
-            </Badge>
-          )}
-        </div>
-
         {/* Creator Header */}
         <div className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border">
           <Button
@@ -844,7 +704,7 @@ const CampaignTracker = () => {
                 {filteredCampaigns.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={2 + activeColumns.length} className="py-8 text-center text-sm text-muted-foreground">
-                      No campaigns found for this creator in the selected view
+                      No campaigns found for this creator
                     </TableCell>
                   </TableRow>
                 )}

@@ -499,37 +499,43 @@ export function UpcomingEventsCalendar() {
     window.open(buildCustomEventGoogleCalendarUrl(event, email), "_blank", "noopener,noreferrer");
   };
 
-  // Group events by month for list view
-  const campaignEvents = events?.filter(e => e.type === "campaign").map(e => ({
-    id: e.campaignId!,
-    campaignId: e.campaignId!,
-    type: e.eventType!,
-    date: e.date,
-    brand: e.brand!,
-    creatorName: e.creatorName!,
-    creatorEmail: e.creatorEmail!,
-    campaignStatus: e.campaignStatus!,
-  })) ?? [];
+  const todayIso = new Date().toISOString().slice(0, 10);
 
-  // Group all events by month for mixed display
+  // Group events by month for list view — exclude past events
+  const campaignEvents = events
+    ?.filter(e => e.type === "campaign" && e.date >= todayIso)
+    .map(e => ({
+      id: e.campaignId!,
+      campaignId: e.campaignId!,
+      type: e.eventType!,
+      date: e.date,
+      brand: e.brand!,
+      creatorName: e.creatorName!,
+      creatorEmail: e.creatorEmail!,
+      campaignStatus: e.campaignStatus!,
+    })) ?? [];
+
+  // Group all events by month for mixed display — exclude past events
   const allEventsByMonth = useMemo(() => {
     if (!events) return [];
-    
+
     const eventsByMonth = new Map<string, CalendarEvent[]>();
-    
-    events.forEach(event => {
-      const date = new Date(`${event.date}T12:00:00`);
-      const monthKey = date.toLocaleDateString("en-GB", {
-        month: "long",
-        year: "numeric",
+
+    events
+      .filter(event => event.date >= todayIso)
+      .forEach(event => {
+        const date = new Date(`${event.date}T12:00:00`);
+        const monthKey = date.toLocaleDateString("en-GB", {
+          month: "long",
+          year: "numeric",
+        });
+
+        if (!eventsByMonth.has(monthKey)) {
+          eventsByMonth.set(monthKey, []);
+        }
+        eventsByMonth.get(monthKey)!.push(event);
       });
-      
-      if (!eventsByMonth.has(monthKey)) {
-        eventsByMonth.set(monthKey, []);
-      }
-      eventsByMonth.get(monthKey)!.push(event);
-    });
-    
+
     return Array.from(eventsByMonth.entries())
       .map(([label, events]) => ({ label, events: events.sort((a, b) => a.date.localeCompare(b.date)) }))
       .sort((a, b) => {
@@ -537,7 +543,7 @@ export function UpcomingEventsCalendar() {
         const dateB = new Date(b.events[0].date);
         return dateA.getTime() - dateB.getTime();
       });
-  }, [events]);
+  }, [events, todayIso]);
 
   const grouped = groupByMonth(campaignEvents);
 

@@ -33,12 +33,6 @@ export function RecentCampaigns() {
     return status;
   };
 
-  const formatBudget = (value: number | null, currency: string) => {
-    if (!value) return "-";
-    const symbol = currency === "GBP" ? "£" : `${currency} `;
-    return `${symbol}${value.toLocaleString()}`;
-  };
-
   return (
     <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex items-center justify-between mb-5">
@@ -61,15 +55,12 @@ export function RecentCampaigns() {
               <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
                 Status
               </th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Budget
-              </th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={4} className="py-6 px-4 text-center text-muted-foreground">
+                <td colSpan={3} className="py-6 px-4 text-center text-muted-foreground">
                   Loading campaigns...
                 </td>
               </tr>
@@ -77,7 +68,7 @@ export function RecentCampaigns() {
 
             {!isLoading && error && (
               <tr>
-                <td colSpan={4} className="py-6 px-4 text-center text-destructive">
+                <td colSpan={3} className="py-6 px-4 text-center text-destructive">
                   Failed to load campaigns
                 </td>
               </tr>
@@ -85,7 +76,7 @@ export function RecentCampaigns() {
 
             {!isLoading && !error && campaigns.length === 0 && (
               <tr>
-                <td colSpan={4} className="py-6 px-4 text-center text-muted-foreground">
+                <td colSpan={3} className="py-6 px-4 text-center text-muted-foreground">
                   No campaigns yet
                 </td>
               </tr>
@@ -111,7 +102,6 @@ export function RecentCampaigns() {
                     {getStatusLabel(status)}
                   </Badge>
                 </td>
-                <td className="py-3 px-4 text-foreground">{formatBudget(campaign.ag_price, campaign.currency)}</td>
               </tr>
               );
             })}

@@ -12,7 +12,6 @@ const Index = lazy(() => import("./pages/Index"));
 const Campaigns = lazy(() => import("./pages/Campaigns"));
 const CampaignTracker = lazy(() => import("./pages/CampaignTracker"));
 const Creators = lazy(() => import("./pages/Creators"));
-const Analytics = lazy(() => import("./pages/Analytics"));
 const Settings = lazy(() => import("./pages/Settings"));
 const AgencySettings = lazy(() => import("./pages/AgencySettings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -35,7 +34,7 @@ const AppRoutes = () => {
     const warmRoutes = () => {
       void import("./pages/Campaigns");
       void import("./pages/Creators");
-      void import("./pages/Analytics");
+
     };
 
     if (bypassAuthInDev) {
@@ -63,7 +62,7 @@ const AppRoutes = () => {
           <Route path="/campaigns" element={<Campaigns />} />
           <Route path="/campaign-tracker" element={<CampaignTracker />} />
           <Route path="/creators" element={<Creators />} />
-          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/analytics" element={<Navigate to="/" replace />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/agency-settings" element={<AgencySettings />} />
           <Route path="*" element={<NotFound />} />
@@ -102,7 +101,7 @@ const AppRoutes = () => {
         />
         <Route
           path="/analytics"
-          element={isAuthenticated ? <Analytics /> : <Navigate to="/auth" replace />}
+          element={<Navigate to="/" replace />}
         />
         <Route
           path="/settings"

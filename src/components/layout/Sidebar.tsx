@@ -4,7 +4,7 @@ import {
   LayoutDashboard,
   Megaphone,
   Users,
-  BarChart3,
+
   Settings,
   Building2,
   ChevronLeft,
@@ -20,7 +20,7 @@ const baseNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: ClipboardList, label: "Campaign Tracker", path: "/campaign-tracker" },
   { icon: Users, label: "Creators", path: "/creators" },
-  { icon: BarChart3, label: "Analytics", path: "/analytics" },
+
   { icon: Settings, label: "Profile Settings", path: "/settings" },
 ];
 

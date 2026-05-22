@@ -222,13 +222,13 @@ export const useAddCreatorPlatform = () => {
     }) => {
       const { data, error } = await supabase
         .from('creator_platforms')
-        .insert({
+        .upsert({
           creator_id: creatorId,
           platform_id: platformId,
           platform_handle: platformHandle,
           follower_count: followerCount,
           engagement_rate: engagementRate,
-        })
+        }, { onConflict: 'creator_id,platform_id' })
         .select()
         .single();
 
