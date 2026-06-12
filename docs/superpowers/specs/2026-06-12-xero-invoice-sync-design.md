@@ -23,7 +23,7 @@ The mapping lives in one shared module (`supabase/functions/_shared/xeroStatus.t
 
 **Deletion is a soft mark.** A Xero DELETED event sets `invoice_status = 'deleted'`; it never deletes the tracker row. (John's diagram says "removed from tracker" — flag this difference to him; destructive deletion driven by an external system is not acceptable.)
 
-**Match key:** Xero `InvoiceNumber` (the human-readable "INV-001"), matched against `campaigns.invoice_no`, scoped to the agency that owns the Xero connection. The Xero `InvoiceID` GUID is stored on first match (`xero_invoice_id`) so subsequent webhook events match exactly even if the invoice number is edited in Xero. ("Invoice ID" in John's message is interpreted as the invoice number per his INV001 example — confirm with him.)
+**Match key:** Xero `InvoiceNumber` — confirmed (Eduardo, 2026-06-12) as the free-text unique field in Xero that the agency means by "Invoice ID" (e.g. "INV-001"). Matched against `campaigns.invoice_no`, scoped to the agency that owns the Xero connection. Matching is exact-string after trimming whitespace; because the field is free text, the 1:1 guarantee rests on the agency keeping numbers unique (Xero warns on duplicates but does not hard-enforce them — if a lookup ever returns multiple invoices, skip and log rather than guess). The Xero `InvoiceID` GUID is stored on first match (`xero_invoice_id`) so subsequent webhook events match exactly even if the invoice number is edited in Xero.
 
 ## Architecture
 
@@ -113,6 +113,9 @@ Created at developer.xero.com (free). OAuth redirect URIs: production URL + `htt
 
 ## Open questions for John
 
-1. Confirm "Invoice ID" means the human-readable invoice number (INV001), not Xero's internal GUID.
-2. Confirm Deleted should mark the row, not remove it from the tracker.
-3. Should a Briefly user be able to edit `invoice_status` manually, or is it strictly Xero-driven? (Design assumes read-only.)
+1. Confirm Deleted should mark the row, not remove it from the tracker.
+2. Should a Briefly user be able to edit `invoice_status` manually, or is it strictly Xero-driven? (Design assumes read-only.)
+
+## Resolved
+
+- "Invoice ID" = Xero's free-text unique invoice number field (e.g. INV-001), matched against `campaigns.invoice_no` (confirmed by Eduardo, 2026-06-12).
