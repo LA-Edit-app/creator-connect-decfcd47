@@ -1,5 +1,5 @@
 import { assertEquals, assertStrictEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { mapXeroStatus, refreshAccessToken, fetchInvoiceById, fetchInvoicesByNumbers } from "./xeroStatus.ts";
+import { mapXeroStatus } from "./xeroStatus.ts";
 
 Deno.test("mapXeroStatus: maps all six known statuses", () => {
   assertEquals(mapXeroStatus("DRAFT"), "draft");
@@ -39,4 +39,18 @@ Deno.test("verifyXeroSignature: rejects tampered body", async () => {
   const sig = await crypto.subtle.sign("HMAC", cryptoKey, enc.encode(body));
   const b64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
   assertEquals(await verifyXeroSignature(tamperedBody, b64, key), false);
+});
+
+Deno.test("toIsoDate: converts Xero /Date() and ISO formats", async () => {
+  const { toIsoDate } = await import("./xeroStatus.ts");
+  // Xero epoch format
+  assertEquals(toIsoDate("/Date(1753920000000+0000)/"), "2025-07-31");
+  // Plain ISO date
+  assertEquals(toIsoDate("2025-07-31"), "2025-07-31");
+  // null / undefined / empty
+  assertStrictEquals(toIsoDate(null), null);
+  assertStrictEquals(toIsoDate(undefined), null);
+  assertStrictEquals(toIsoDate(""), null);
+  // Invalid string
+  assertStrictEquals(toIsoDate("not-a-date"), null);
 });

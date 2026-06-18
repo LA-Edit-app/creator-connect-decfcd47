@@ -58,10 +58,19 @@ export async function refreshAccessToken(
     body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken }),
   });
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Xero token refresh failed: ${text}`);
+    let errorCode = `HTTP ${res.status}`;
+    try {
+      const errBody = await res.json();
+      if (errBody.error) errorCode = errBody.error as string;
+    } catch {
+      // ignore parse errors
+    }
+    throw new Error(`Xero token refresh failed: ${errorCode}`);
   }
   const payload = await res.json();
+  if (!payload.access_token) {
+    throw new Error(`Xero token refresh: response missing access_token (HTTP ${res.status})`);
+  }
   return {
     accessToken: payload.access_token as string,
     newRefreshToken: (payload.refresh_token ?? refreshToken) as string,
@@ -93,7 +102,7 @@ export async function fetchInvoicesByNumbers(
 ): Promise<XeroInvoice[]> {
   if (invoiceNumbers.length === 0) return [];
   const where = encodeURIComponent(
-    `Type=="ACCPAY"&&InvoiceNumber=="${invoiceNumbers.map((n) => n.replace(/"/g, '\\"')).join('" OR InvoiceNumber=="')}"`
+    `Type=="ACCPAY"&&(InvoiceNumber=="${invoiceNumbers.map((n) => n.replace(/"/g, '\\"')).join('" OR InvoiceNumber=="')}")`
   );
   const res = await fetch(`https://api.xero.com/api.xro/2.0/Invoices?where=${where}`, {
     headers: {
