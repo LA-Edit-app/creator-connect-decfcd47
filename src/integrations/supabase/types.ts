@@ -10,497 +10,750 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
       agencies: {
         Row: {
+          created_at: string | null
           id: string
           name: string
           owner_id: string | null
-          created_at: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
+          created_at?: string | null
           id?: string
           name: string
           owner_id?: string | null
-          created_at?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
+          created_at?: string | null
           id?: string
           name?: string
           owner_id?: string | null
-          created_at?: string
-          updated_at?: string
+          updated_at?: string | null
         }
+        Relationships: []
       }
       agency_column_schemas: {
         Row: {
-          id: string
           agency_id: string
-          version: number
           columns: Json
+          created_at: string
+          created_by: string | null
+          id: string
           is_published: boolean
+          notes: string | null
           published_at: string | null
           published_by: string | null
-          created_by: string | null
-          created_at: string
-          notes: string | null
+          version: number
         }
         Insert: {
-          id?: string
           agency_id: string
-          version: number
-          columns: Json
+          columns?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
           is_published?: boolean
+          notes?: string | null
           published_at?: string | null
           published_by?: string | null
-          created_by?: string | null
-          created_at?: string
-          notes?: string | null
+          version: number
         }
         Update: {
-          id?: string
           agency_id?: string
-          version?: number
           columns?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
           is_published?: boolean
+          notes?: string | null
           published_at?: string | null
           published_by?: string | null
-          created_by?: string | null
-          created_at?: string
-          notes?: string | null
+          version?: number
         }
+        Relationships: [
+          {
+            foreignKeyName: "agency_column_schemas_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agency_invitations: {
+        Row: {
+          accepted_at: string | null
+          agency_id: string
+          created_at: string | null
+          email: string
+          id: string
+          invited_by: string | null
+          role: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          agency_id: string
+          created_at?: string | null
+          email: string
+          id?: string
+          invited_by?: string | null
+          role?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          agency_id?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          invited_by?: string | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_invitations_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agency_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       agency_members: {
         Row: {
           agency_id: string
+          created_at: string | null
+          role: string
           user_id: string
-          role: 'owner' | 'admin' | 'member'
-          created_at: string
         }
         Insert: {
           agency_id: string
+          created_at?: string | null
+          role?: string
           user_id: string
-          role?: 'owner' | 'admin' | 'member'
-          created_at?: string
         }
         Update: {
           agency_id?: string
+          created_at?: string | null
+          role?: string
           user_id?: string
-          role?: 'owner' | 'admin' | 'member'
-          created_at?: string
         }
-      }
-      creators: {
-        Row: {
-          id: string
-          name: string
-          handle: string
-          avatar: string | null
-          email: string | null
-          is_active: boolean
-          agency_id: string | null
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          handle: string
-          avatar?: string | null
-          email?: string | null
-          is_active?: boolean
-          agency_id?: string | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          handle?: string
-          avatar?: string | null
-          email?: string | null
-          is_active?: boolean
-          agency_id?: string | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      notifications: {
-        Row: {
-          id: string
-          user_id: string
-          agency_id: string
-          type: 'campaign_alert' | 'creator_update' | 'weekly_report' | 'email_notification' | 'task_assignment' | 'custom_event'
-          title: string
-          message: string
-          data: Json | null
-          read: boolean
-          email_sent: boolean
-          email_sent_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          agency_id: string
-          type: 'campaign_alert' | 'creator_update' | 'weekly_report' | 'email_notification' | 'task_assignment' | 'custom_event'
-          title: string
-          message: string
-          data?: Json | null
-          read?: boolean
-          email_sent?: boolean
-          email_sent_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          agency_id?: string
-          type?: 'campaign_alert' | 'creator_update' | 'weekly_report' | 'email_notification' | 'task_assignment' | 'custom_event'
-          title?: string
-          message?: string
-          data?: Json | null
-          read?: boolean
-          email_sent?: boolean
-          email_sent_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      platforms: {
-        Row: {
-          id: string
-          name: string
-          icon: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          icon?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          icon?: string | null
-          created_at?: string
-        }
-      }
-      creator_platforms: {
-        Row: {
-          creator_id: string
-          platform_id: string
-          platform_handle: string | null
-          follower_count: number | null
-          engagement_rate: number | null
-          created_at: string
-        }
-        Insert: {
-          creator_id: string
-          platform_id: string
-          platform_handle?: string | null
-          follower_count?: number | null
-          engagement_rate?: number | null
-          created_at?: string
-        }
-        Update: {
-          creator_id?: string
-          platform_id?: string
-          platform_handle?: string | null
-          follower_count?: number | null
-          engagement_rate?: number | null
-          created_at?: string
-        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_members_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agency_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       campaigns: {
         Row: {
-          id: string
-          creator_id: string
-          brand: string
-          launch_date: string | null
           activity: string | null
-          live_date: string | null
           ag_price: number | null
-          creator_fee: number | null
-          shot: string | null
-          complete: boolean
-          campaign_status: string
-          completion_status: string | null
-          invoice_no: string | null
-          paid_date: string | null
-          includes_vat: string | null
-          currency: string
-          brand_pos: string | null
-          payment_terms: string | null
-          notes: string | null
           agency_id: string | null
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          creator_id: string
           brand: string
-          launch_date?: string | null
-          activity?: string | null
-          live_date?: string | null
-          ag_price?: number | null
-          creator_fee?: number | null
-          shot?: string | null
-          complete?: boolean
-          campaign_status?: string
-          completion_status?: string | null
-          invoice_no?: string | null
-          paid_date?: string | null
-          includes_vat?: string | null
-          currency?: string
-          brand_pos?: string | null
-          payment_terms?: string | null
-          notes?: string | null
-          agency_id?: string | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          creator_id?: string
-          brand?: string
-          launch_date?: string | null
-          activity?: string | null
-          live_date?: string | null
-          ag_price?: number | null
-          creator_fee?: number | null
-          shot?: string | null
-          complete?: boolean
-          campaign_status?: string
-          completion_status?: string | null
-          invoice_no?: string | null
-          paid_date?: string | null
-          includes_vat?: string | null
-          currency?: string
-          brand_pos?: string | null
-          payment_terms?: string | null
-          notes?: string | null
-          agency_id?: string | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      custom_events: {
-        Row: {
-          id: string
-          title: string
-          description: string | null
-          event_date: string
-          event_time: string | null
-          color: string
-          all_day: boolean
-          agency_id: string | null
+          brand_pos: string | null
+          campaign_status: string
+          complete: boolean | null
+          completion_status: string | null
+          created_at: string | null
           created_by: string | null
-          created_at: string
-          updated_at: string
+          creator_fee: number | null
+          creator_id: string | null
+          currency: string | null
+          custom_fields: Json
+          id: string
+          includes_vat: string | null
+          invoice_no: string | null
+          invoice_status: string | null
+          launch_date: string | null
+          live_date: string | null
+          notes: string | null
+          paid_date: string | null
+          payment_terms: string | null
+          shot: string | null
+          updated_at: string | null
+          xero_invoice_id: string | null
+          xero_synced_at: string | null
         }
         Insert: {
-          id?: string
-          title: string
-          description?: string | null
-          event_date: string
-          event_time?: string | null
-          color?: string
-          all_day?: boolean
+          activity?: string | null
+          ag_price?: number | null
           agency_id?: string | null
+          brand: string
+          brand_pos?: string | null
+          campaign_status?: string
+          complete?: boolean | null
+          completion_status?: string | null
+          created_at?: string | null
           created_by?: string | null
-          created_at?: string
-          updated_at?: string
+          creator_fee?: number | null
+          creator_id?: string | null
+          currency?: string | null
+          custom_fields?: Json
+          id?: string
+          includes_vat?: string | null
+          invoice_no?: string | null
+          invoice_status?: string | null
+          launch_date?: string | null
+          live_date?: string | null
+          notes?: string | null
+          paid_date?: string | null
+          payment_terms?: string | null
+          shot?: string | null
+          updated_at?: string | null
+          xero_invoice_id?: string | null
+          xero_synced_at?: string | null
         }
         Update: {
-          id?: string
-          title?: string
-          description?: string | null
-          event_date?: string
-          event_time?: string | null
-          color?: string
-          all_day?: boolean
+          activity?: string | null
+          ag_price?: number | null
           agency_id?: string | null
+          brand?: string
+          brand_pos?: string | null
+          campaign_status?: string
+          complete?: boolean | null
+          completion_status?: string | null
+          created_at?: string | null
           created_by?: string | null
-          created_at?: string
-          updated_at?: string
+          creator_fee?: number | null
+          creator_id?: string | null
+          currency?: string | null
+          custom_fields?: Json
+          id?: string
+          includes_vat?: string | null
+          invoice_no?: string | null
+          invoice_status?: string | null
+          launch_date?: string | null
+          live_date?: string | null
+          notes?: string | null
+          paid_date?: string | null
+          payment_terms?: string | null
+          shot?: string | null
+          updated_at?: string | null
+          xero_invoice_id?: string | null
+          xero_synced_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       content_items: {
         Row: {
-          id: string
-          campaign_id: string
-          type: 'image' | 'video' | 'reel' | 'story' | 'carousel'
-          title: string
-          url: string | null
-          thumbnail: string | null
-          platform: string
-          status: 'draft' | 'pending' | 'approved' | 'published'
-          due_date: string | null
-          notes: string | null
-          source: string | null
           agency_id: string | null
+          campaign_id: string | null
+          created_at: string | null
           created_by: string | null
-          created_at: string
-          updated_at: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          platform: string
+          source: string | null
+          status: string | null
+          thumbnail: string | null
+          title: string
+          type: string
+          updated_at: string | null
+          url: string | null
         }
         Insert: {
-          id?: string
-          campaign_id: string
-          type: 'image' | 'video' | 'reel' | 'story' | 'carousel'
-          title: string
-          url?: string | null
-          thumbnail?: string | null
-          platform: string
-          status?: 'draft' | 'pending' | 'approved' | 'published'
-          due_date?: string | null
-          notes?: string | null
-          source?: string | null
           agency_id?: string | null
+          campaign_id?: string | null
+          created_at?: string | null
           created_by?: string | null
-          created_at?: string
-          updated_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          platform: string
+          source?: string | null
+          status?: string | null
+          thumbnail?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+          url?: string | null
         }
         Update: {
-          id?: string
-          campaign_id?: string
-          type?: 'image' | 'video' | 'reel' | 'story' | 'carousel'
-          title?: string
-          url?: string | null
-          thumbnail?: string | null
-          platform?: string
-          status?: 'draft' | 'pending' | 'approved' | 'published'
-          due_date?: string | null
-          notes?: string | null
-          source?: string | null
           agency_id?: string | null
+          campaign_id?: string | null
+          created_at?: string | null
           created_by?: string | null
-          created_at?: string
-          updated_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          platform?: string
+          source?: string | null
+          status?: string | null
+          thumbnail?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          url?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "content_items_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_items_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_platforms: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          engagement_rate: number | null
+          follower_count: number | null
+          platform_handle: string | null
+          platform_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          engagement_rate?: number | null
+          follower_count?: number | null
+          platform_handle?: string | null
+          platform_id: string
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          engagement_rate?: number | null
+          follower_count?: number | null
+          platform_handle?: string | null
+          platform_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_platforms_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_platforms_platform_id_fkey"
+            columns: ["platform_id"]
+            isOneToOne: false
+            referencedRelation: "platforms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creators: {
+        Row: {
+          agency_id: string | null
+          avatar: string | null
+          created_at: string | null
+          created_by: string | null
+          email: string | null
+          handle: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          agency_id?: string | null
+          avatar?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          handle: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          agency_id?: string | null
+          avatar?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          handle?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creators_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_events: {
+        Row: {
+          agency_id: string | null
+          all_day: boolean | null
+          color: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          event_date: string
+          event_time: string | null
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          agency_id?: string | null
+          all_day?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          event_date: string
+          event_time?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          agency_id?: string | null
+          all_day?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_events_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          agency_id: string
+          created_at: string | null
+          data: Json | null
+          email_sent: boolean | null
+          email_sent_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          agency_id: string
+          created_at?: string | null
+          data?: Json | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          agency_id?: string
+          created_at?: string | null
+          data?: Json | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platforms: {
+        Row: {
+          created_at: string | null
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
-          id: string
-          email: string | null
-          first_name: string | null
-          last_name: string | null
-          role: 'user' | 'admin' | 'agency'
-          agency_name: string | null
           agency_id: string | null
+          agency_name: string | null
           avatar_url: string | null
-          email_notifications: boolean
-          campaign_alerts: boolean
-          weekly_reports: boolean
-          creator_updates: boolean
-          created_at: string
-          updated_at: string
+          campaign_alerts: boolean | null
+          created_at: string | null
+          creator_updates: boolean | null
+          email: string | null
+          email_notifications: boolean | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: string | null
+          updated_at: string | null
+          weekly_reports: boolean | null
         }
         Insert: {
-          id: string
-          email?: string | null
-          first_name?: string | null
-          last_name?: string | null
-          role?: 'user' | 'admin' | 'agency'
-          agency_name?: string | null
           agency_id?: string | null
+          agency_name?: string | null
           avatar_url?: string | null
-          email_notifications?: boolean
-          campaign_alerts?: boolean
-          weekly_reports?: boolean
-          creator_updates?: boolean
-          created_at?: string
-          updated_at?: string
+          campaign_alerts?: boolean | null
+          created_at?: string | null
+          creator_updates?: boolean | null
+          email?: string | null
+          email_notifications?: boolean | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: string | null
+          updated_at?: string | null
+          weekly_reports?: boolean | null
         }
         Update: {
-          id?: string
-          email?: string | null
-          first_name?: string | null
-          last_name?: string | null
-          role?: 'user' | 'admin' | 'agency'
-          agency_name?: string | null
           agency_id?: string | null
+          agency_name?: string | null
           avatar_url?: string | null
-          email_notifications?: boolean
-          campaign_alerts?: boolean
-          weekly_reports?: boolean
-          creator_updates?: boolean
-          created_at?: string
-          updated_at?: string
+          campaign_alerts?: boolean | null
+          created_at?: string | null
+          creator_updates?: boolean | null
+          email?: string | null
+          email_notifications?: boolean | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: string | null
+          updated_at?: string | null
+          weekly_reports?: boolean | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tasks: {
         Row: {
-          id: string
-          title: string
-          completed: boolean
-          sort_order: number
-          related_creator_id: string | null
-          related_campaign_id: string | null
           agency_id: string | null
-          created_by: string | null
           assigned_to: string | null
-          created_at: string
-          updated_at: string
+          completed: boolean | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          related_campaign_id: string | null
+          related_creator_id: string | null
+          sort_order: number
+          title: string
+          updated_at: string | null
         }
         Insert: {
-          id?: string
-          title: string
-          completed?: boolean
-          sort_order?: number
-          related_creator_id?: string | null
-          related_campaign_id?: string | null
           agency_id?: string | null
-          created_by?: string | null
           assigned_to?: string | null
-          created_at?: string
-          updated_at?: string
+          completed?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          related_campaign_id?: string | null
+          related_creator_id?: string | null
+          sort_order?: number
+          title: string
+          updated_at?: string | null
         }
         Update: {
-          id?: string
-          title?: string
-          completed?: boolean
-          sort_order?: number
-          related_creator_id?: string | null
-          related_campaign_id?: string | null
           agency_id?: string | null
-          created_by?: string | null
           assigned_to?: string | null
-          created_at?: string
-          updated_at?: string
+          completed?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          related_campaign_id?: string | null
+          related_creator_id?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_related_campaign_id_fkey"
+            columns: ["related_campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_related_creator_id_fkey"
+            columns: ["related_creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      xero_connections: {
+        Row: {
+          agency_id: string
+          connected_by: string | null
+          created_at: string | null
+          id: string
+          last_synced_at: string | null
+          refresh_token: string
+          status: string
+          tenant_id: string
+          tenant_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          agency_id: string
+          connected_by?: string | null
+          created_at?: string | null
+          id?: string
+          last_synced_at?: string | null
+          refresh_token: string
+          status?: string
+          tenant_id: string
+          tenant_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          agency_id?: string
+          connected_by?: string | null
+          created_at?: string | null
+          id?: string
+          last_synced_at?: string | null
+          refresh_token?: string
+          status?: string
+          tenant_id?: string
+          tenant_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xero_connections_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: true
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      current_agency_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string | null
+      current_agency_id: { Args: never; Returns: string }
+      current_user_agency_role: { Args: never; Returns: string }
+      default_campaign_columns: { Args: never; Returns: Json }
+      get_published_column_schema: {
+        Args: { p_agency_id: string }
+        Returns: Json
       }
-      current_user_agency_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string | null
+      get_xero_connection_status: {
+        Args: never
+        Returns: {
+          last_synced_at: string
+          status: string
+          tenant_name: string
+        }[]
       }
-      is_agency_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
+      is_agency_admin: { Args: never; Returns: boolean }
+      seed_default_column_schema: {
+        Args: { p_agency_id: string }
+        Returns: undefined
       }
     }
     Enums: {
@@ -634,3 +887,5 @@ export const Constants = {
     Enums: {},
   },
 } as const
+A new version of Supabase CLI is available: v2.107.0 (currently installed v2.75.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
