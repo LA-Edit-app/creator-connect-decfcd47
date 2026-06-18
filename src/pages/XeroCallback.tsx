@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
@@ -9,15 +9,20 @@ const XeroCallback = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [tenantName, setTenantName] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const exchangeAttempted = useRef(false);
 
   useEffect(() => {
+    if (exchangeAttempted.current) return;
+    exchangeAttempted.current = true;
+
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     const agencyId = params.get("state");
     const redirectUri = `${window.location.origin}/xero/callback`;
 
     if (!code || !agencyId) {
-      setErrorMessage("Missing authorisation code or state parameter.");
+      const xeroError = params.get("error_description") ?? params.get("error");
+      setErrorMessage(xeroError ?? "Missing authorisation code or state parameter.");
       setStatus("error");
       return;
     }

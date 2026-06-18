@@ -738,6 +738,7 @@ export type Database = {
       current_agency_id: { Args: never; Returns: string }
       current_user_agency_role: { Args: never; Returns: string }
       default_campaign_columns: { Args: never; Returns: Json }
+      disconnect_xero: { Args: never; Returns: undefined }
       get_published_column_schema: {
         Args: { p_agency_id: string }
         Returns: Json

@@ -50,12 +50,7 @@ export const useDisconnectXero = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const { data: agencyId } = await supabase.rpc("current_agency_id");
-      if (!agencyId) throw new Error("No agency found");
-      const { error } = await supabase
-        .from("xero_connections")
-        .delete()
-        .eq("agency_id", agencyId);
+      const { error } = await supabase.rpc("disconnect_xero");
       if (error) throw error;
     },
     onSuccess: () => {
