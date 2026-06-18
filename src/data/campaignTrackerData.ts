@@ -39,6 +39,7 @@ export interface CampaignData {
   content?: ContentItem[];
   notes?: string;
   secondaryStatus?: string;
+  invoiceStatus?: string | null;
   custom_fields?: Record<string, unknown>;
 }
 

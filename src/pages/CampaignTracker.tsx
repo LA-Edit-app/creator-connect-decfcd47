@@ -144,6 +144,7 @@ const CampaignTracker = () => {
             : "Pending",
       secondaryStatus: campaign.completion_status === "awaiting_details" ? "Awaiting details" : "",
       invoiceNo: campaign.invoice_no || "",
+      invoiceStatus: campaign.invoice_status ?? null,
       paid: campaign.paid_date || "",
       includesVat: campaign.includes_vat || "",
       currency: campaign.currency || "GBP",
@@ -487,6 +488,33 @@ const CampaignTracker = () => {
     return "bg-muted text-muted-foreground";
   };
 
+  const INVOICE_STATUS_STYLES: Record<string, string> = {
+    draft: "bg-gray-100 text-gray-700",
+    pending_review: "bg-blue-100 text-blue-800",
+    approved: "bg-teal-100 text-teal-800",
+    paid: "bg-green-100 text-green-800",
+    voided: "bg-amber-100 text-amber-800",
+    deleted: "bg-red-100 text-red-800",
+  };
+
+  const INVOICE_STATUS_LABELS: Record<string, string> = {
+    draft: "Draft",
+    pending_review: "Pending review",
+    approved: "Approved",
+    paid: "Paid",
+    voided: "Voided",
+    deleted: "Deleted",
+  };
+
+  const InvoiceStatusBadge = ({ status }: { status: string | null | undefined }) => {
+    if (!status) return <span className="text-muted-foreground text-xs">—</span>;
+    return (
+      <Badge className={`text-xs font-medium ${INVOICE_STATUS_STYLES[status] ?? "bg-gray-100 text-gray-700"}`}>
+        {INVOICE_STATUS_LABELS[status] ?? status}
+      </Badge>
+    );
+  };
+
   const getSecondaryStatusStyle = (status: string) => {
     if (status === "Awaiting details") return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
     if (status === "None") return "bg-muted text-muted-foreground";
@@ -801,7 +829,10 @@ const CampaignTracker = () => {
                         case "invoiceNo":
                           return (
                             <TableCell key={col.key}>
-                              <EditableCell value={campaign.invoiceNo} onChange={(v) => void updateCampaign(campaign.id, "invoiceNo", v)} displayClassName="text-muted-foreground" />
+                              <div className="flex flex-col gap-1">
+                                <EditableCell value={campaign.invoiceNo} onChange={(v) => void updateCampaign(campaign.id, "invoiceNo", v)} displayClassName="text-muted-foreground" />
+                                <InvoiceStatusBadge status={campaign.invoiceStatus} />
+                              </div>
                             </TableCell>
                           );
                         case "paid":
