@@ -23,6 +23,8 @@ The mapping lives in one shared module (`supabase/functions/_shared/xeroStatus.t
 
 **Deletion is a soft mark.** A Xero DELETED event sets `invoice_status = 'deleted'`; it never deletes the tracker row. (John's diagram says "removed from tracker" — flag this difference to him; destructive deletion driven by an external system is not acceptable.)
 
+**Invoice type:** Xero **bills (ACCPAY)** — `GET /Invoices?where=Type=="ACCPAY"`. Creators submit invoices to the agency; the agency enters them in Xero as bills. This is confirmed by the status diagram (Draft → Submitted → Authorised → Paid → Voided → Deleted), which matches ACCPAY bills — purchase orders do not have Paid or Voided statuses. All API queries must include the `Type=="ACCPAY"` filter to avoid matching sales invoices with the same number (clarified Eduardo, 2026-06-18; update if John confirms otherwise).
+
 **Match key:** Xero `InvoiceNumber` — confirmed (Eduardo, 2026-06-12) as the free-text unique field in Xero that the agency means by "Invoice ID" (e.g. "INV-001"). Matched against `campaigns.invoice_no`, scoped to the agency that owns the Xero connection. Matching is exact-string after trimming whitespace; because the field is free text, the 1:1 guarantee rests on the agency keeping numbers unique (Xero warns on duplicates but does not hard-enforce them — if a lookup ever returns multiple invoices, skip and log rather than guess). The Xero `InvoiceID` GUID is stored on first match (`xero_invoice_id`) so subsequent webhook events match exactly even if the invoice number is edited in Xero.
 
 ## Architecture
