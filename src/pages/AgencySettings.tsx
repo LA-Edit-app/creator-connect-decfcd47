@@ -25,7 +25,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
-import { UserMinus, UserPlus, ShieldCheck, Shield, LayoutGrid, History, Plus, Pencil, Trash2, CheckCircle2, RotateCcw } from "lucide-react";
+import { UserMinus, UserPlus, ShieldCheck, Shield, LayoutGrid, History, Plus, Pencil, Trash2, CheckCircle2, RotateCcw, Link2, Link2Off } from "lucide-react";
+import { useXeroConnection, useConnectXero, useDisconnectXero } from "@/hooks/useXeroConnection";
 import { ColumnSchemaEditor } from "@/components/agency-settings/ColumnSchemaEditor";
 import {
   useAgencySchemas,
@@ -80,6 +81,82 @@ const memberDisplayName = (member: AgencyMemberWithProfile) => {
   const last = member.profiles?.last_name;
   if (first || last) return [first, last].filter(Boolean).join(" ");
   return member.profiles?.email ?? "Unknown User";
+};
+
+const XeroSection = () => {
+  const { data: connection, isLoading } = useXeroConnection();
+  const { buildXeroAuthUrl } = useConnectXero();
+  const disconnect = useDisconnectXero();
+
+  if (isLoading) return <Skeleton className="h-20 w-full" />;
+
+  if (connection?.status === "active") {
+    return (
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div className="flex items-center gap-3">
+          <Link2 className="h-5 w-5 text-green-500" />
+          <div>
+            <p className="font-medium text-sm">Connected to Xero</p>
+            <p className="text-xs text-muted-foreground">{connection.tenant_name}</p>
+          </div>
+        </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" size="sm">Disconnect</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Disconnect Xero?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Invoice status sync will stop. Campaign data already synced is kept.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => disconnect.mutate()}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Disconnect
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  }
+
+  if (connection?.status === "error") {
+    return (
+      <div className="flex items-center justify-between rounded-lg border border-destructive/50 p-4">
+        <div className="flex items-center gap-3">
+          <Link2Off className="h-5 w-5 text-destructive" />
+          <div>
+            <p className="font-medium text-sm">Xero connection error</p>
+            <p className="text-xs text-muted-foreground">Re-connect to resume sync</p>
+          </div>
+        </div>
+        <Button size="sm" asChild>
+          <a href={buildXeroAuthUrl() ?? "#"}>Reconnect Xero</a>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between rounded-lg border p-4">
+      <div className="flex items-center gap-3">
+        <Link2Off className="h-5 w-5 text-muted-foreground" />
+        <div>
+          <p className="font-medium text-sm">Connect Xero</p>
+          <p className="text-xs text-muted-foreground">Sync invoice statuses from your Xero account</p>
+        </div>
+      </div>
+      <Button size="sm" asChild>
+        <a href={buildXeroAuthUrl() ?? "#"}>Connect Xero</a>
+      </Button>
+    </div>
+  );
 };
 
 const AgencySettings = () => {
@@ -607,6 +684,17 @@ const AgencySettings = () => {
             <UserPlus className="w-4 h-4 mr-2" />
             {inviteMember.isPending ? "Adding..." : "Add Member"}
           </Button>
+        </div>
+
+        {/* Integrations */}
+        <div className="bg-card rounded-xl border border-border p-6">
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold">Integrations</h2>
+              <p className="text-sm text-muted-foreground">Connect external tools to Briefly</p>
+            </div>
+            <XeroSection />
+          </div>
         </div>
 
       </div>
