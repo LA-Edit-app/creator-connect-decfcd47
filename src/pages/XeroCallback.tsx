@@ -1,102 +1,81 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-type ExchangeResult = {
-  refresh_token?: string;
-  access_token?: string;
-  expires_in?: number;
-  tenants?: Array<{ tenantId?: string; tenantName?: string; id?: string; name?: string }>;
-  error?: string;
-};
-
-const buildSecretsCommand = (result: ExchangeResult) => {
-  const tenant = result.tenants?.[0];
-  const tenantId = tenant?.tenantId || tenant?.id || "<tenant_id>";
-  const refreshToken = result.refresh_token || "<refresh_token>";
-
-  return [
-    `supabase secrets set XERO_REFRESH_TOKEN=\"${refreshToken}\"`,
-    `supabase secrets set XERO_TENANT_ID=\"${tenantId}\"`,
-    "supabase functions deploy xero-oauth-exchange xero-sync-campaigns",
-  ].join("\n");
-};
 
 const XeroCallback = () => {
-  const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState<ExchangeResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const code = useMemo(() => new URLSearchParams(window.location.search).get("code"), []);
-  const redirectUri = `${window.location.origin}/xero/callback`;
+  const navigate = useNavigate();
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [tenantName, setTenantName] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const agencyId = params.get("state");
+    const redirectUri = `${window.location.origin}/xero/callback`;
+
+    if (!code || !agencyId) {
+      setErrorMessage("Missing authorisation code or state parameter.");
+      setStatus("error");
+      return;
+    }
+
     const exchange = async () => {
-      if (!code) {
-        setError("Missing authorization code in callback URL.");
-        setLoading(false);
+      const { data, error } = await supabase.functions.invoke<{
+        success: boolean;
+        tenantName: string;
+        error?: string;
+      }>("xero-oauth-exchange", { body: { code, redirectUri, agencyId } });
+      if (error || data?.error) {
+        setErrorMessage(error?.message ?? data?.error ?? "Connection failed");
+        setStatus("error");
         return;
       }
-
-      const { data, error: invokeError } = await supabase.functions.invoke<ExchangeResult>("xero-oauth-exchange", {
-        body: { code, redirectUri },
-      });
-
-      if (invokeError || data?.error) {
-        setError(invokeError?.message || data?.error || "Failed to exchange code");
-        setLoading(false);
-        return;
-      }
-
-      setResult(data ?? null);
-      setLoading(false);
+      setTenantName(data?.tenantName ?? "");
+      setStatus("success");
     };
 
     void exchange();
-  }, [code, redirectUri]);
+  }, []);
 
-  const commandText = result ? buildSecretsCommand(result) : "";
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">Connecting to Xero...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 max-w-md text-center">
+          <XCircle className="h-12 w-12 text-destructive" />
+          <h1 className="text-xl font-semibold">Connection failed</h1>
+          <p className="text-muted-foreground">{errorMessage}</p>
+          <Button onClick={() => navigate("/agency-settings")}>Back to settings</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-background p-6 md:p-10">
-      <div className="max-w-3xl mx-auto space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Xero OAuth Callback</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {loading && <p className="text-sm text-muted-foreground">Exchanging authorization code with Xero...</p>}
-
-            {!loading && error && (
-              <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-
-            {!loading && !error && result && (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  Success. Use these commands to complete secrets setup for invoice/payment sync.
-                </p>
-
-                <pre className="rounded-md border bg-muted/30 p-3 text-xs overflow-x-auto">{commandText}</pre>
-
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(commandText);
-                    }}
-                  >
-                    Copy Commands
-                  </Button>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4 max-w-md text-center">
+        <CheckCircle className="h-12 w-12 text-green-500" />
+        <h1 className="text-xl font-semibold">Connected to Xero</h1>
+        <p className="text-muted-foreground">
+          Successfully connected to <strong>{tenantName}</strong>. Invoice statuses will now
+          sync automatically.
+        </p>
+        <Button onClick={() => navigate("/agency-settings")}>Go to settings</Button>
       </div>
-    </main>
+    </div>
   );
 };
 
