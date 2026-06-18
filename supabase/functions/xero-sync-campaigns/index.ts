@@ -1,223 +1,179 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-type XeroInvoice = {
-  InvoiceID: string;
-  InvoiceNumber?: string;
-  DueDateString?: string;
-  TotalTax?: number;
-  AmountDue?: number;
-  Status?: string;
-  Payments?: Array<{ Date?: string }>;
-};
+import {
+  refreshAccessToken,
+  fetchInvoicesByNumbers,
+  mapXeroStatus,
+  toIsoDate,
+  type XeroInvoice,
+} from "../_shared/xeroStatus.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const toIsoDate = (value?: string | null) => {
-  if (!value) return null;
-
-  if (value.startsWith("/Date(")) {
-    const match = value.match(/\/Date\((\d+)(?:[+-]\d+)?\)\//);
-    if (!match) return null;
-    const date = new Date(Number(match[1]));
-    return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
-};
-
-const getAccessToken = async () => {
-  const directToken = Deno.env.get("XERO_ACCESS_TOKEN");
-  if (directToken) {
-    return { accessToken: directToken, refreshTokenRotated: false };
-  }
-
-  const clientId = Deno.env.get("XERO_CLIENT_ID");
-  const clientSecret = Deno.env.get("XERO_CLIENT_SECRET");
-  const refreshToken = Deno.env.get("XERO_REFRESH_TOKEN");
-
-  if (!clientId || !clientSecret || !refreshToken) {
-    throw new Error(
-      "Missing Xero credentials. Set either XERO_ACCESS_TOKEN or XERO_CLIENT_ID, XERO_CLIENT_SECRET, XERO_REFRESH_TOKEN."
-    );
-  }
-
-  const authHeader = btoa(`${clientId}:${clientSecret}`);
-  const body = new URLSearchParams({
-    grant_type: "refresh_token",
-    refresh_token: refreshToken,
-  });
-
-  const tokenResponse = await fetch("https://identity.xero.com/connect/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${authHeader}`,
-    },
-    body,
-  });
-
-  if (!tokenResponse.ok) {
-    const errorText = await tokenResponse.text();
-    throw new Error(`Failed to refresh Xero token: ${errorText}`);
-  }
-
-  const tokenPayload = await tokenResponse.json();
-  return {
-    accessToken: tokenPayload.access_token as string,
-    refreshTokenRotated: Boolean(tokenPayload.refresh_token && tokenPayload.refresh_token !== refreshToken),
-  };
-};
-
-const fetchInvoiceByNumber = async (
-  accessToken: string,
-  tenantId: string,
-  invoiceNumber: string
-): Promise<XeroInvoice | null> => {
-  const where = encodeURIComponent(`InvoiceNumber==\"${invoiceNumber.replace(/"/g, '\\"')}\"`);
-  const response = await fetch(`https://api.xero.com/api.xro/2.0/Invoices?where=${where}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Xero-Tenant-Id": tenantId,
-      Accept: "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const payload = await response.json();
-  const invoices = (payload?.Invoices ?? []) as XeroInvoice[];
-  return invoices[0] ?? null;
-};
+const BATCH_SIZE = 50;
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const tenantId = Deno.env.get("XERO_TENANT_ID");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const clientId = Deno.env.get("XERO_CLIENT_ID")!;
+    const clientSecret = Deno.env.get("XERO_CLIENT_SECRET")!;
 
-    if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
-      throw new Error("Missing Supabase environment variables");
-    }
-
-    if (!tenantId) {
-      throw new Error("Missing XERO_TENANT_ID secret");
-    }
-
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: req.headers.get("Authorization") ?? "",
-        },
-      },
+    // Verify caller (UI manual sync or cron with service key)
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
     });
-
-    const {
-      data: { user },
-      error: userError,
-    } = await userClient.auth.getUser();
-
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { creatorId } = await req.json().catch(() => ({ creatorId: null }));
+    const { data: { user } } = await userClient.auth.getUser();
 
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
-    let campaignQuery = admin
-      .from("campaigns")
-      .select("id, invoice_no, paid_date, payment_terms, includes_vat")
-      .not("invoice_no", "is", null)
-      .neq("invoice_no", "")
-      .order("updated_at", { ascending: false });
+    // Accept optional agencyId filter (from UI, scoped to one agency)
+    const body = await req.json().catch(() => ({}));
+    const agencyIdFilter = body.agencyId as string | undefined;
 
-    if (creatorId) {
-      campaignQuery = campaignQuery.eq("creator_id", creatorId);
+    // Fetch all active Xero connections (or just the one)
+    let connectionQuery = admin
+      .from("xero_connections")
+      .select("agency_id, tenant_id, refresh_token")
+      .eq("status", "active");
+
+    if (agencyIdFilter) {
+      connectionQuery = connectionQuery.eq("agency_id", agencyIdFilter);
+    } else if (user) {
+      // UI caller without agencyId: scope to their agency only
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("agency_id")
+        .eq("id", user.id)
+        .single();
+      if (profile?.agency_id) {
+        connectionQuery = connectionQuery.eq("agency_id", profile.agency_id);
+      }
     }
+    // Cron callers (no user, no agencyId) get all connections
 
-    const { data: campaigns, error: campaignError } = await campaignQuery;
-
-    if (campaignError) throw campaignError;
-
-    if (!campaigns || campaigns.length === 0) {
+    const { data: connections, error: connError } = await connectionQuery;
+    if (connError) throw connError;
+    if (!connections || connections.length === 0) {
       return new Response(
-        JSON.stringify({ synced: 0, skipped: 0, message: "No campaigns with invoice numbers found." }),
+        JSON.stringify({ synced: 0, skipped: 0, message: "No active Xero connections found." }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const { accessToken, refreshTokenRotated } = await getAccessToken();
+    let totalSynced = 0;
+    let totalSkipped = 0;
 
-    let synced = 0;
-    let skipped = 0;
+    for (const conn of connections) {
+      // Fetch campaigns with invoice numbers for this agency
+      const { data: campaigns, error: campError } = await admin
+        .from("campaigns")
+        .select("id, invoice_no, xero_invoice_id, paid_date, payment_terms, includes_vat")
+        .eq("agency_id", conn.agency_id)
+        .not("invoice_no", "is", null)
+        .neq("invoice_no", "");
 
-    for (const campaign of campaigns) {
-      const invoiceNo = (campaign.invoice_no ?? "").trim();
-      if (!invoiceNo) {
-        skipped += 1;
+      if (campError || !campaigns || campaigns.length === 0) {
+        totalSkipped += campaigns?.length ?? 0;
         continue;
       }
 
-      const invoice = await fetchInvoiceByNumber(accessToken, tenantId, invoiceNo);
-      if (!invoice) {
-        skipped += 1;
+      // Refresh token and persist the new one immediately
+      let accessToken: string;
+      try {
+        const { accessToken: at, newRefreshToken } = await refreshAccessToken(
+          clientId,
+          clientSecret,
+          conn.refresh_token
+        );
+        accessToken = at;
+        await admin
+          .from("xero_connections")
+          .update({ refresh_token: newRefreshToken, updated_at: new Date().toISOString() })
+          .eq("agency_id", conn.agency_id);
+      } catch {
+        await admin
+          .from("xero_connections")
+          .update({ status: "error", updated_at: new Date().toISOString() })
+          .eq("agency_id", conn.agency_id);
+        totalSkipped += campaigns.length;
         continue;
       }
 
-      const paymentDates = (invoice.Payments ?? [])
-        .map((payment) => toIsoDate(payment.Date))
-        .filter((value): value is string => Boolean(value))
-        .sort();
+      // Process in batches of BATCH_SIZE
+      for (let i = 0; i < campaigns.length; i += BATCH_SIZE) {
+        const batch = campaigns.slice(i, i + BATCH_SIZE);
+        const invoiceNumbers = batch
+          .map((c) => (c.invoice_no ?? "").trim())
+          .filter(Boolean);
 
-      const paidDate = paymentDates.length > 0 ? paymentDates[paymentDates.length - 1] : campaign.paid_date;
+        const invoices = await fetchInvoicesByNumbers(accessToken, conn.tenant_id, invoiceNumbers);
 
-      const updates = {
-        invoice_no: invoice.InvoiceNumber ?? campaign.invoice_no,
-        payment_terms: invoice.DueDateString ? `Due ${invoice.DueDateString}` : campaign.payment_terms,
-        includes_vat:
-          typeof invoice.TotalTax === "number" ? (invoice.TotalTax > 0 ? "VAT" : "NO VAT") : campaign.includes_vat,
-        paid_date: (invoice.AmountDue ?? 0) <= 0 ? paidDate : campaign.paid_date,
-      };
+        for (const campaign of batch) {
+          const invoiceNo = (campaign.invoice_no ?? "").trim();
+          const matching = invoices.filter((inv) => inv.InvoiceNumber === invoiceNo);
 
-      const { error: updateError } = await admin.from("campaigns").update(updates).eq("id", campaign.id);
-      if (updateError) {
-        skipped += 1;
-        continue;
+          if (matching.length !== 1) {
+            // 0 = not in Xero, 2+ = ambiguous number — skip both
+            totalSkipped += 1;
+            continue;
+          }
+
+          const invoice = matching[0];
+          const brieflyStatus = mapXeroStatus(invoice.Status ?? "");
+          const paymentDates = (invoice.Payments ?? [])
+            .map((p) => toIsoDate(p.Date))
+            .filter((d): d is string => Boolean(d))
+            .sort();
+
+          const updates: Record<string, unknown> = {
+            xero_invoice_id: invoice.InvoiceID,
+            xero_synced_at: new Date().toISOString(),
+            invoice_no: invoice.InvoiceNumber ?? campaign.invoice_no,
+            payment_terms: invoice.DueDateString ? `Due ${invoice.DueDateString}` : campaign.payment_terms,
+            includes_vat: typeof invoice.TotalTax === "number"
+              ? invoice.TotalTax > 0 ? "VAT" : "NO VAT"
+              : campaign.includes_vat,
+            paid_date: (invoice.AmountDue ?? 0) <= 0 && paymentDates.length > 0
+              ? paymentDates[paymentDates.length - 1]
+              : campaign.paid_date,
+          };
+
+          if (brieflyStatus !== null) {
+            updates.invoice_status = brieflyStatus;
+          }
+
+          const { error: updateError } = await admin
+            .from("campaigns")
+            .update(updates)
+            .eq("id", campaign.id);
+
+          if (updateError) {
+            totalSkipped += 1;
+          } else {
+            totalSynced += 1;
+          }
+        }
       }
 
-      synced += 1;
+      await admin
+        .from("xero_connections")
+        .update({ last_synced_at: new Date().toISOString() })
+        .eq("agency_id", conn.agency_id);
     }
 
     return new Response(
-      JSON.stringify({
-        synced,
-        skipped,
-        refreshTokenRotated,
-        warning: refreshTokenRotated
-          ? "Xero refresh token rotated. Update XERO_REFRESH_TOKEN secret to avoid future auth failures."
-          : undefined,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ synced: totalSynced, skipped: totalSkipped }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
