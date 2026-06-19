@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   refreshAccessToken,
+  fetchInvoiceById,
   fetchInvoicesByNumbers,
   mapXeroStatus,
   toIsoDate,
@@ -106,58 +107,79 @@ Deno.serve(async (req) => {
         continue;
       }
 
+      // Helper: build the campaign update object from a matched Xero invoice
+      const buildUpdates = (invoice: XeroInvoice, campaign: typeof campaigns[number]): Record<string, unknown> => {
+        const brieflyStatus = mapXeroStatus(invoice.Status ?? "");
+        const paymentDates = (invoice.Payments ?? [])
+          .map((p) => toIsoDate(p.Date))
+          .filter((d): d is string => Boolean(d))
+          .sort();
+
+        const updates: Record<string, unknown> = {
+          xero_invoice_id: invoice.InvoiceID,
+          xero_synced_at: new Date().toISOString(),
+          invoice_no: invoice.InvoiceNumber ?? campaign.invoice_no,
+          payment_terms: invoice.DueDateString ? `Due ${invoice.DueDateString}` : campaign.payment_terms,
+          includes_vat: typeof invoice.TotalTax === "number"
+            ? invoice.TotalTax > 0 ? "VAT" : "NO VAT"
+            : campaign.includes_vat,
+          paid_date: (invoice.AmountDue ?? 0) <= 0 && paymentDates.length > 0
+            ? paymentDates[paymentDates.length - 1]
+            : campaign.paid_date,
+        };
+        if (brieflyStatus !== null) updates.invoice_status = brieflyStatus;
+        return updates;
+      };
+
       // Process in batches of BATCH_SIZE
       for (let i = 0; i < campaigns.length; i += BATCH_SIZE) {
         const batch = campaigns.slice(i, i + BATCH_SIZE);
-        const invoiceNumbers = batch
-          .map((c) => (c.invoice_no ?? "").trim())
-          .filter(Boolean);
 
-        const invoices = await fetchInvoicesByNumbers(accessToken, conn.tenant_id, invoiceNumbers);
+        // Split: campaigns with a stored Xero GUID use fetchInvoiceById (1:1, handles
+        // void-and-repeat where the same invoice number appears on multiple bills).
+        // Campaigns without a GUID use the batched number lookup.
+        const byGuid = batch.filter((c) => c.xero_invoice_id);
+        const byNumber = batch.filter((c) => !c.xero_invoice_id);
 
-        for (const campaign of batch) {
-          const invoiceNo = (campaign.invoice_no ?? "").trim();
-          const matching = invoices.filter((inv) => inv.InvoiceNumber === invoiceNo);
+        // Fetch by GUID in parallel (each is one Xero API call but always unambiguous)
+        const guidResults = await Promise.all(
+          byGuid.map(async (c) => ({
+            campaign: c,
+            invoice: await fetchInvoiceById(accessToken, conn.tenant_id, c.xero_invoice_id!),
+          }))
+        );
 
-          if (matching.length !== 1) {
-            // 0 = not in Xero, 2+ = ambiguous number — skip both
-            totalSkipped += 1;
-            continue;
-          }
-
-          const invoice = matching[0];
-          const brieflyStatus = mapXeroStatus(invoice.Status ?? "");
-          const paymentDates = (invoice.Payments ?? [])
-            .map((p) => toIsoDate(p.Date))
-            .filter((d): d is string => Boolean(d))
-            .sort();
-
-          const updates: Record<string, unknown> = {
-            xero_invoice_id: invoice.InvoiceID,
-            xero_synced_at: new Date().toISOString(),
-            invoice_no: invoice.InvoiceNumber ?? campaign.invoice_no,
-            payment_terms: invoice.DueDateString ? `Due ${invoice.DueDateString}` : campaign.payment_terms,
-            includes_vat: typeof invoice.TotalTax === "number"
-              ? invoice.TotalTax > 0 ? "VAT" : "NO VAT"
-              : campaign.includes_vat,
-            paid_date: (invoice.AmountDue ?? 0) <= 0 && paymentDates.length > 0
-              ? paymentDates[paymentDates.length - 1]
-              : campaign.paid_date,
-          };
-
-          if (brieflyStatus !== null) {
-            updates.invoice_status = brieflyStatus;
-          }
-
+        for (const { campaign, invoice } of guidResults) {
+          if (!invoice) { totalSkipped += 1; continue; }
           const { error: updateError } = await admin
             .from("campaigns")
-            .update(updates)
+            .update(buildUpdates(invoice, campaign))
             .eq("id", campaign.id);
+          if (updateError) { totalSkipped += 1; } else { totalSynced += 1; }
+        }
 
-          if (updateError) {
-            totalSkipped += 1;
-          } else {
-            totalSynced += 1;
+        // Fetch by invoice number (batched, 1 Xero API call for all)
+        if (byNumber.length > 0) {
+          const invoiceNumbers = byNumber
+            .map((c) => (c.invoice_no ?? "").trim())
+            .filter(Boolean);
+          const invoices = await fetchInvoicesByNumbers(accessToken, conn.tenant_id, invoiceNumbers);
+
+          for (const campaign of byNumber) {
+            const invoiceNo = (campaign.invoice_no ?? "").trim();
+            const matching = invoices.filter((inv) => inv.InvoiceNumber === invoiceNo);
+
+            if (matching.length !== 1) {
+              // 0 = not in Xero yet; 2+ = ambiguous (same number on multiple bills)
+              totalSkipped += 1;
+              continue;
+            }
+
+            const { error: updateError } = await admin
+              .from("campaigns")
+              .update(buildUpdates(matching[0], campaign))
+              .eq("id", campaign.id);
+            if (updateError) { totalSkipped += 1; } else { totalSynced += 1; }
           }
         }
       }
