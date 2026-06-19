@@ -25,5 +25,7 @@ dist-ssr
 .env
 .env.*
 supabase/config.toml
+supabase/.temp/
 .vercel
 .env*.local
+.env*

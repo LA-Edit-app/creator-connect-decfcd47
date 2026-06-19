@@ -40,6 +40,7 @@ export interface CampaignData {
   notes?: string;
   secondaryStatus?: string;
   invoiceStatus?: string | null;
+  xeroInvoiceId?: string | null;
   custom_fields?: Record<string, unknown>;
 }
 

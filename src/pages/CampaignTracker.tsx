@@ -145,6 +145,7 @@ const CampaignTracker = () => {
       secondaryStatus: campaign.completion_status === "awaiting_details" ? "Awaiting details" : "",
       invoiceNo: campaign.invoice_no || "",
       invoiceStatus: campaign.invoice_status ?? null,
+      xeroInvoiceId: campaign.xero_invoice_id ?? null,
       paid: campaign.paid_date || "",
       includesVat: campaign.includes_vat || "",
       currency: campaign.currency || "GBP",
@@ -830,7 +831,17 @@ const CampaignTracker = () => {
                           return (
                             <TableCell key={col.key}>
                               <div className="flex flex-col gap-1">
-                                <EditableCell value={campaign.invoiceNo} onChange={(v) => void updateCampaign(campaign.id, "invoiceNo", v)} displayClassName="text-muted-foreground" />
+                                {campaign.xeroInvoiceId ? (
+                                  <div
+                                    className="flex items-center gap-1 px-2 py-1 min-h-[32px] text-muted-foreground"
+                                    title="Invoice number is managed by Xero"
+                                  >
+                                    <span>{campaign.invoiceNo || "-"}</span>
+                                    <RefreshCw className="h-3 w-3 shrink-0 opacity-40" />
+                                  </div>
+                                ) : (
+                                  <EditableCell value={campaign.invoiceNo} onChange={(v) => void updateCampaign(campaign.id, "invoiceNo", v)} displayClassName="text-muted-foreground" />
+                                )}
                                 <InvoiceStatusBadge status={campaign.invoiceStatus} />
                               </div>
                             </TableCell>
