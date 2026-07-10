@@ -94,7 +94,7 @@ export async function fetchInvoiceById(
   return (payload?.Invoices?.[0] as XeroInvoice) ?? null;
 }
 
-// Fetch up to 50 ACCPAY invoices by InvoiceNumber in one API call
+// Fetch up to 50 ACCREC invoices by InvoiceNumber in one API call
 export async function fetchInvoicesByNumbers(
   accessToken: string,
   tenantId: string,
@@ -102,7 +102,7 @@ export async function fetchInvoicesByNumbers(
 ): Promise<XeroInvoice[]> {
   if (invoiceNumbers.length === 0) return [];
   const where = encodeURIComponent(
-    `Type=="ACCPAY"&&(InvoiceNumber=="${invoiceNumbers.map((n) => n.replace(/"/g, '\\"')).join('" OR InvoiceNumber=="')}")`
+    `Type=="ACCREC"&&(InvoiceNumber=="${invoiceNumbers.map((n) => n.replace(/"/g, '\\"')).join('" OR InvoiceNumber=="')}")`
   );
   const res = await fetch(`https://api.xero.com/api.xro/2.0/Invoices?where=${where}`, {
     headers: {
