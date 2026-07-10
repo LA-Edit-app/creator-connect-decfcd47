@@ -33,8 +33,17 @@ const XeroCallback = () => {
         tenantName: string;
         error?: string;
       }>("xero-oauth-exchange", { body: { code, redirectUri, agencyId } });
+
       if (error || data?.error) {
-        setErrorMessage(error?.message ?? data?.error ?? "Connection failed");
+        let msg = data?.error ?? error?.message ?? "Connection failed";
+        // FunctionsHttpError carries the actual response body in .context
+        if (error && "context" in error) {
+          try {
+            const body = await (error as unknown as { context: Response }).context.json() as { error?: string };
+            if (body.error) msg = body.error;
+          } catch { /* ignore parse errors */ }
+        }
+        setErrorMessage(msg);
         setStatus("error");
         return;
       }

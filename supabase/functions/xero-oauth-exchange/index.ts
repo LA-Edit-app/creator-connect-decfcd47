@@ -101,14 +101,26 @@ Deno.serve(async (req) => {
       status: "active",
     }, { onConflict: "agency_id" });
 
-    if (upsertError) throw upsertError;
+    if (upsertError) {
+      console.error("xero-oauth-exchange upsert failed:", JSON.stringify(upsertError));
+      const msg = upsertError.message ?? upsertError.details ?? JSON.stringify(upsertError);
+      return new Response(JSON.stringify({ error: `DB error: ${msg}` }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     return new Response(
       JSON.stringify({ success: true, tenantName: tenant.tenantName ?? tenant.name }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
+    const message = err instanceof Error
+      ? err.message
+      : (err != null && typeof (err as Record<string, unknown>).message === "string"
+          ? (err as { message: string }).message
+          : JSON.stringify(err));
+    console.error("xero-oauth-exchange unhandled error:", message);
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
