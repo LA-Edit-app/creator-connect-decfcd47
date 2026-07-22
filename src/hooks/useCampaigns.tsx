@@ -477,16 +477,16 @@ export const useUpdateCampaign = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, { updates }) => {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
       queryClient.invalidateQueries({ queryKey: ['campaign', data.id] });
       queryClient.invalidateQueries({ queryKey: ['campaigns', 'creator', data.creator_id] });
       queryClient.invalidateQueries({ queryKey: ['campaigns', 'stats'] });
-      
+
       // Trigger notification for significant campaign updates
       let notificationTitle = 'Campaign Updated';
       let notificationMessage = `Campaign "${data.brand}" has been updated.`;
-      
+
       // Check for specific important updates
       if (updates.complete !== undefined) {
         if (updates.complete) {
@@ -500,7 +500,7 @@ export const useUpdateCampaign = () => {
         notificationTitle = 'Campaign Scheduled';
         notificationMessage = `Campaign "${data.brand}" dates have been updated.`;
       }
-      
+
       createNotification.mutate({
         type: 'campaign_alert',
         title: notificationTitle,
