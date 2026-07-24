@@ -22,6 +22,7 @@ import { useCreateCampaign } from "@/hooks/useCampaigns";
 import type { ColumnDefinition } from "@/hooks/useColumnSchemas";
 import { SYSTEM_COLUMN_KEYS } from "@/hooks/useColumnSchemas";
 import type { Creator } from "@/data/campaignTrackerData";
+import { DatePickerCell } from "@/components/campaign-tracker/DatePickerCell";
 import { toast } from "sonner";
 
 // ── Static select options for built-in system columns ────────────────────────
@@ -231,11 +232,10 @@ export const CreateCampaignDialog = ({
 
       case "date":
         return (
-          <Input
-            className="h-9"
-            placeholder="e.g. 01 Jan 2025"
+          <DatePickerCell
             value={values[col.key] ?? ""}
-            onChange={(e) => setValue(col.key, e.target.value)}
+            onChange={(v) => setValue(col.key, v)}
+            displayClassName="h-9 w-full border border-input rounded-md bg-background hover:bg-accent/50"
           />
         );
 
