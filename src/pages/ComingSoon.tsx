@@ -208,7 +208,7 @@ const ComingSoon = () => {
           <img src={LOGO} alt="Briefly" style={{ height: 34, width: 34, borderRadius: 8, objectFit: "cover" }} />
           <span className="nav-logo-name">Briefly</span>
         </div>
-        <a href="/auth" className="nav-login">
+        <a href="https://briefly-suite.vercel.app" className="nav-login" target="_blank" rel="noopener noreferrer">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
           </svg>
